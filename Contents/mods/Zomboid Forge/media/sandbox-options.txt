@@ -1,0 +1,39 @@
+VERSION = 1,
+
+option ZomboidForge.tickUpdater
+{
+	type = integer,
+	min = 0,
+	max = 2000,
+	default = 500,
+	page = ZomboidForge,
+	translation = ZomboidForge_tickUpdater,
+}
+
+option ZomboidForge.Nametags
+{
+	type = boolean,
+	default = true,
+	page = ZomboidForge,
+	translation = ZomboidForge_nametags,
+}
+
+
+
+option ZomboidForge.ZomboidSpawn
+{
+	type = boolean,
+	default = false,
+	page = ZomboidForge,
+	translation = ZomboidForge_zomboidSpawn,
+}
+
+option ZomboidForge.ZomboidChance
+{
+	type = integer,
+	min = 0,
+	max = 1000,
+	default = 500,
+	page = ZomboidForge,
+	translation = ZomboidForge_zomboidChance,
+}

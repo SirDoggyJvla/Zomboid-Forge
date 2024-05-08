@@ -1,0 +1,10 @@
+id=ZomboidForge
+name=Zomboid Forge
+description=Zomboid Forge is a Project Zomboid framework that modders can use to easily implement zombie types that are compatible with each others.
+poster=poster.png
+authors=SirDoggyJvla
+icon=icon.png
+tags=Build 41,Zombies,Infected,TLOU,The Last of Us,Cordyceps,Post,Apocalypse
+url=https://ko-fi.com/sirdoggyjvla
+versionMin=41.0
+require=00AccessibleFields
