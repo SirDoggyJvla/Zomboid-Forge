@@ -1,0 +1,14 @@
+id=TLOU_PZ_Infected-dev
+name=The Last of Us Infected [BETA]
+description=Makes the experience of The Last of Us even better by adding the various infected types. Is the official continuation of TLOU Infected by drenindok.
+poster=poster.png
+poster=Runner.png
+poster=Stalker.png
+poster=Clicker.png
+poster=Bloater.png
+authors=SirDoggyJvla
+icon=icon.png
+tags=Build 41,Zombies,Infected,TLOU,The Last of Us,Cordyceps,Post,Apocalypse
+url=https://ko-fi.com/sirdoggyjvla
+versionMin=41.0
+require=00AccessibleFields

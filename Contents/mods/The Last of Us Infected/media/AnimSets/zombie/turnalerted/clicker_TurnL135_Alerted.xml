@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<animNode x_extends="clickerDefaultTurn.xml">
+	<m_Name>clicker_TurnL135_Alerted</m_Name>
+	<m_AnimName>clicker_TurnL135_Alerted</m_AnimName>
+	<m_Conditions>
+		<m_Name>isClicker</m_Name>
+		<m_Type>BOOL</m_Type>
+		<m_BoolValue>true</m_BoolValue>
+	</m_Conditions>
+	<m_Conditions>
+		<m_Name>TurnAlertedValue</m_Name>
+		<m_Type>STRING</m_Type>
+		<m_StringValue>135L</m_StringValue>
+	</m_Conditions>
+</animNode>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<fileGuidTable>
+	<!-- Boomer Clothing -->
+	<files>
+        <path>media/clothing/clothingItems/Bloater.xml</path>
+        <guid>6b9a55dd-a875-46d9-8205-b3454358b9d5</guid>
+    </files>
+	
+	<!-- Fungi Clothing -->
+	<files>
+		<path>media/clothing/clothingItems/Hat_Fungi.xml</path>
+		<guid>b2308062-293a-4598-933a-d22da4e69f27</guid>
+	</files>
+</fileGuidTable>

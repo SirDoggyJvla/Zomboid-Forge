@@ -1,0 +1,14 @@
+version=1
+id=3236152071
+title=The Last of Us Infected [BETA]
+description=[h1]THIS MOD IS A BETA FOR THE REWORK OF [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3128757602]THE LAST OF US INFECTED - OVERHAUL[/url].
+description=
+description=IT IS IN A WIP STATE BUT IT'S PLAYABLE IN SOLO.
+description=
+description=MULTIPLAYER NEEDS MORE TESTING WHICH IS THE POINT OF THE BETA.[/h1]
+description=
+description=[url=https://discord.com/invite/SReMnbV4V7][img]https://raw.githubusercontent.com/Chuckleberry-Finn/chuckImages/main/PZmodCommBanner2.png[/img][/url]
+description=
+description=[url=https://trello.com/b/OmzeKvdv/the-last-of-us-infected][img]https://raw.githubusercontent.com/SirDoggyJvla/The-Last-of-Us-Infected/main/images/mod_advancement.png[/img][/url]
+tags=Build 41;Balance;Clothing/Armor;Framework;Hardmode;Items;Misc;Models;Realistic;Textures
+visibility=public

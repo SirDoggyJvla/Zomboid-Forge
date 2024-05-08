@@ -1,0 +1,217 @@
+module Base
+{
+
+	sound ZombieFootstepsCombined
+	{
+		category = Zombie,
+		clip
+		{
+			event = Zombie/Footsteps,
+		}
+	}
+
+	sound FemaleZombieCombined
+	{
+		category = Zombie,
+		clip
+		{
+			event = Zombie/Voice/FemaleA,
+			volume = 0.0,
+		}
+		clip
+		{
+			event = Zombie/Voice/FemaleB,
+			volume = 0.0,
+		}
+		clip
+		{
+			event = Zombie/Voice/FemaleC,
+			volume = 0.0,
+		}
+	}
+
+	sound MaleZombieCombined
+	{
+		category = Zombie,
+		clip
+		{
+			event = Zombie/Voice/MaleA,
+			volume = 0.0,
+		}
+		clip
+		{
+			event = Zombie/Voice/MaleB,
+			volume = 0.0,
+		}
+		clip
+		{
+			event = Zombie/Voice/MaleC,
+			volume = 0.0,
+		}
+	}
+	
+	sound HeadSmash
+	{
+		category = Zombie,
+		clip
+		{
+			event = Zombie/HeadSmash,
+		}
+	}
+	
+	sound HeadStab
+	{
+		category = Zombie,
+		clip
+		{
+			event = Zombie/HeadStab,
+		}
+	}
+
+	sound BurningFlesh
+	{
+		category = Zombie,
+		clip
+		{
+			event = Character/Combat/BurningFlesh,
+		}
+	}
+
+	sound ZombieThumpGeneric
+	{
+		category = Zombie,
+		clip
+		{
+			event = Zombie/Thump/Generic,
+		}
+	}
+
+	sound ZombieThumpMetal
+	{
+		category = Zombie,
+		clip
+		{
+			event = Zombie/Thump/Metal,
+		}
+	}
+
+	sound ZombieThumpVehicle
+	{
+		category = Zombie,
+		clip
+		{
+			event = Zombie/Thump/Vehicle,
+		}
+	}
+
+	sound ZombieThumpVehicleWindow
+	{
+		category = Zombie,
+		clip
+		{
+			event = Zombie/Thump/VehicleWindow,
+		}
+	}
+
+	sound ZombieThumpWindow
+	{
+		category = Zombie,
+		clip
+		{
+			event = Zombie/Thump/Window,
+		}
+	}
+
+	sound ZombieThumpBarbedFence
+	{
+		category = Zombie,
+		clip
+		{
+			event = Zombie/Thump/BarbedFence,
+		}
+	}
+
+	sound ZombieThumpGarageDoor
+	{
+		category = Zombie,
+		clip
+		{
+			event = Zombie/Thump/GarageDoor,
+		}
+	}
+	
+	sound ZombieScratch
+	{
+		category = Zombie,
+		clip
+		{
+			event = Zombie/Scratch,
+		}
+	}
+
+	sound ZombieBite
+	{
+		category = Zombie,
+		clip
+		{
+			event = Zombie/Bite,
+		}
+	}
+
+	sound ZombieCrawlLungeSwing
+	{
+		category = Zombie,
+		clip
+		{
+			event = Weapon/Melee/BluntShort/Hammer/Swing,
+		}
+	}
+
+	sound ZombieCrawlLungeHit
+	{
+		category = Zombie,
+		clip
+		{
+			event = Zombie/Scratch,
+			volume = 0.5,
+		}
+	}
+
+	sound ZombieSurprisedPlayer
+	{
+		category = Zombie,
+		clip
+		{
+			event = Game/ZombieSurprisedPlayer,
+		}
+	}
+
+	sound BodyHitGround
+	{
+		category = Zombie,
+		clip
+		{
+			event = Character/Foley/BodyHitGround,
+		}
+	}
+
+	sound ZombieTrip
+	{
+		category = Zombie,
+		clip
+		{
+			event = Zombie/Trip,
+		}
+	}
+	
+	sound TutorialZombie
+	{
+		category = Zombie,
+		clip
+		{
+/*			event = Zombie/Voice/Tutorial,*/
+			file = media/sound/fzombierand5.wav,
+			distanceMax = 100,
+		}
+	}
+}

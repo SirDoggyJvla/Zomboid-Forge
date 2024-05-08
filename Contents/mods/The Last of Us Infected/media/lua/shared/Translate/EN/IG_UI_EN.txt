@@ -1,0 +1,26 @@
+IGUI_EN = {
+    -- infected types names
+	IGUI_TLOU_Runner = "Runner",
+    IGUI_TLOU_Stalker = "Stalker",
+    IGUI_TLOU_Clicker = "Clicker",
+    IGUI_TLOU_Bloater = "Bloater",
+
+    -- mod options
+	IGUI_ZomboidForge_Zombie= "The Last of Us Infected"
+    IGUI_ZomboidForge_NameTag= "Show Zombie Type",
+	IGUI_ZomboidForge_NameTag_Tooltip= "Show the type of zombie that the player is aiming at",
+	IGUI_ZomboidForge_TextHeight = "NameTag Height"
+	IGUI_ZomboidForge_TextHeight1 = "Overhead"
+	IGUI_ZomboidForge_TextHeight2 = "On Body"
+	IGUI_ZomboidForge_TextHeight3 = "Underfoot"
+	IGUI_ZomboidForge_TextHeight_Tooltip= "Set the height of Zombies' NameTag",
+	IGUI_ZomboidForge_HeightOffset = "Height Offset"
+	IGUI_ZomboidForge_HeightOffset1 = "3↑"
+	IGUI_ZomboidForge_HeightOffset2 = "2↑"
+	IGUI_ZomboidForge_HeightOffset3 = "1↑"
+	IGUI_ZomboidForge_HeightOffset4 = "0"
+	IGUI_ZomboidForge_HeightOffset5 = "1↓"
+	IGUI_ZomboidForge_HeightOffset6 = "2↓"
+	IGUI_ZomboidForge_HeightOffset7 = "3↓"
+	IGUI_ZomboidForge_HeightOffset_Tooltip= "Set the position of Zombies' NameTag precisely",
+}

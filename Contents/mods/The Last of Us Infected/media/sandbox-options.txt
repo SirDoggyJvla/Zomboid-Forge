@@ -1,0 +1,316 @@
+VERSION = 1,
+
+option TLOUZombies.RunnerSpawn
+{
+	type = boolean,
+	default = true,
+	page = ZomboidForge,
+	translation = ZomboidForge_runnerSpawn,
+}
+
+option TLOUZombies.RunnerChance
+{
+	type = integer,
+	min = 0,
+	max = 1000,
+	default = 580,
+	page = ZomboidForge,
+	translation = TLOU_Runner,
+}
+
+option TLOUZombies.StalkerSpawn
+{
+	type = boolean,
+	default = true,
+	page = ZomboidForge,
+	translation = ZomboidForge_stalkerSpawn,
+}
+
+option TLOUZombies.StalkerChance
+{
+	type = integer,
+	min = 0,
+	max = 1000,
+	default = 90,
+	page = ZomboidForge,
+	translation = TLOU_Stalker,
+}
+
+option TLOUZombies.ClickerSpawn
+{
+	type = boolean,
+	default = true,
+	page = ZomboidForge,
+	translation = ZomboidForge_clickerSpawn,
+}
+
+option TLOUZombies.ClickerChance
+{
+	type = integer,
+	min = 0,
+	max = 1000,
+	default = 320,
+	page = ZomboidForge,
+	translation = TLOU_Clicker,
+}
+
+option TLOUZombies.BloaterSpawn
+{
+	type = boolean,
+	default = true,
+	page = ZomboidForge,
+	translation = ZomboidForge_bloaterSpawn,
+}
+
+option TLOUZombies.BloaterChance
+{
+	type = integer,
+	min = 0,
+	max = 1000,
+	default = 10,
+	page = ZomboidForge,
+	translation = TLOU_Bloater,
+}
+
+option TLOUZombies.RunnerVision
+{
+	type = enum,
+	numValues = 3,
+	default = 2,
+	page = TLOU_Zombies,
+	translation = TLOU_RunnerVision,
+	valueTranslation = TLOU_EyesightEnum,
+}
+
+option TLOUZombies.RunnerHearing
+{
+	type = enum,
+	numValues = 3,
+	default = 2,
+	page = TLOU_Zombies,
+	translation = TLOU_RunnerHearing,
+	valueTranslation = TLOU_HearingEnum,
+}
+
+option TLOUZombies.StalkerVision
+{
+	type = enum,
+	numValues = 3,
+	default = 2,
+	page = TLOU_Zombies,
+	translation = TLOU_StalkerVision,
+	valueTranslation = TLOU_EyesightEnum,
+}
+
+option TLOUZombies.StalkerHearing
+{
+	type = enum,
+	numValues = 3,
+	default = 2,
+	page = TLOU_Zombies,
+	translation = TLOU_StalkerHearing,
+	valueTranslation = TLOU_HearingEnum,
+}
+
+option TLOUZombies.ClickerHearing
+{
+	type = enum,
+	numValues = 3,
+	default = 1,
+	page = TLOU_Zombies,
+	translation = TLOU_ClickerHearing,
+	valueTranslation = TLOU_HearingEnum,
+}
+
+option TLOUZombies.BloaterHearing
+{
+	type = enum,
+	numValues = 3,
+	default = 1,
+	page = TLOU_Zombies,
+	translation = TLOU_BloaterHearing,
+	valueTranslation = TLOU_HearingEnum,
+}
+
+option TLOUZombies.HideIndoors
+{
+	type = boolean,
+	default = true,
+	page = TLOU_Zombies,
+	translation = TLOU_HideIndoors,
+}
+
+option TLOUZombies.NoPushClickers
+{
+	type = boolean,
+	default = true,
+	page = TLOU_Zombies,
+	translation = TLOU_NoPushClickers,
+}
+
+option TLOUZombies.GrabbyClickers
+{
+	type = boolean,
+	default = true,
+	page = TLOU_Zombies,
+	translation = TLOU_GrabbyClickers,
+}
+
+option TLOUZombies.OneShotClickers
+{
+	type = boolean,
+	default = true,
+	page = TLOU_Zombies,
+	translation = TLOU_OneShotClickers,
+}
+
+option TLOUZombies.StrongBloater
+{
+	type = boolean,
+	default = true,
+	page = TLOU_Zombies,
+	translation = TLOU_StrongBloater,
+}
+
+option TLOUZombies.ClickerHealth
+{
+	type = integer,
+	min = 1,
+	max = 1000,
+	default = 5,
+	page = TLOU_Zombies,
+	translation = TLOU_ClickerHP,
+}
+
+option TLOUZombies.BloaterHealth
+{
+	type = integer,
+	default = 50,
+	min = 1,
+	max = 1000,
+	page = TLOU_Zombies,
+	translation = TLOU_BloaterHP,
+}
+
+option TLOUZombies.CordycepsSpawn
+{
+	type = boolean,
+	default = true,
+	page = TLOU_Zombies,
+	translation = TLOU_CordycepsSpawn,
+}
+
+option TLOUZombies.CordycepsSpawnRate_Runner
+{
+	type = integer, 
+	min = 0, 
+	max = 100, 
+	default = 50,
+	page = TLOU_Zombies,
+	translation = TLOU_CordycepsSpawnRate_Runner,
+}
+
+option TLOUZombies.CordycepsSpawnRate_Stalker
+{
+	type = integer, 
+	min = 0, 
+	max = 100, 
+	default = 100,
+	page = TLOU_Zombies,
+	translation = TLOU_CordycepsSpawnRate_Stalker,
+}
+
+option TLOUZombies.CordycepsSpawnRate_Clicker
+{
+	type = integer, 
+	min = 0, 
+	max = 100, 
+	default = 100,
+	page = TLOU_Zombies,
+	translation = TLOU_CordycepsSpawnRate_Clicker,
+}
+
+option TLOUZombies.CordycepsSpawnRate_Bloater
+{
+	type = integer, 
+	min = 0, 
+	max = 100, 
+	default = 100,
+	page = TLOU_Zombies,
+	translation = TLOU_CordycepsSpawnRate_Bloater,
+}
+
+option TLOUZombies.OnlyUnexplored
+{
+	type = boolean,
+	default = true,
+	page = TLOU_Zombies,
+	translation = TLOU_IgnoreUnexplored,
+}
+
+option TLOUZombies.WanderAtNight
+{
+	type = boolean,
+	default = true,
+	page = TLOU_Zombies,
+	translation = TLOU_WanderAtNight,
+}
+
+option TLOUZombies.MaxDistanceToCheck
+{
+	type = integer, 
+	min = 0, 
+	max = 100, 
+	default = 50,
+	page = TLOU_Zombies,
+	translation = TLOU_MaxDistanceToCheck,
+}
+
+option TLOUZombies.HideIndoorsUpdates
+{
+	type = integer,
+	min = 15,
+	max = 720,
+	default = 30,
+	page = TLOU_Zombies,
+	translation = ZomboidForge_hideIndoorsUpdates,
+}
+
+
+option ZomboidForge.tickUpdater
+{
+	type = integer,
+	min = 0,
+	max = 2000,
+	default = 500,
+	page = ZomboidForge,
+	translation = ZomboidForge_tickUpdater,
+}
+
+option ZomboidForge.Nametags
+{
+	type = boolean,
+	default = true,
+	page = ZomboidForge,
+	translation = ZomboidForge_nametags,
+}
+
+
+
+option ZomboidForge.ZomboidSpawn
+{
+	type = boolean,
+	default = false,
+	page = ZomboidForge,
+	translation = ZomboidForge_zomboidSpawn,
+}
+
+option ZomboidForge.ZomboidChance
+{
+	type = integer,
+	min = 0,
+	max = 1000,
+	default = 500,
+	page = ZomboidForge,
+	translation = ZomboidForge_zomboidChance,
+}
