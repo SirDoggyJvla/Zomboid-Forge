@@ -222,6 +222,9 @@ end
 ZomboidForge.OnHit = function(attacker, zombie, handWeapon, damage)
     if zombie:isZombie() then
         local trueID = ZomboidForge.pID(zombie)
+        -- zombie did not get initialized by the game yet so don't touch that zombie
+        if trueID == 0 then return end
+
         local nonPersistentZData = ZomboidForge.GetNonPersistentZData(trueID)
 
         local ZType = nonPersistentZData.ZType
@@ -284,6 +287,10 @@ end
 ---@param zombie        IsoZombie
 ZomboidForge.OnDeath = function(zombie)
     local trueID = ZomboidForge.pID(zombie)
+
+    -- zombie did not get initialized by the game yet so don't touch that zombie
+    if trueID == 0 then return end
+
     local nonPersistentZData = ZomboidForge.GetNonPersistentZData(trueID)
 
     local ZType = nonPersistentZData.ZType
@@ -294,6 +301,7 @@ ZomboidForge.OnDeath = function(zombie)
     end
 
     local ZombieTable = ZomboidForge.ZTypes[ZType]
+    if not ZombieTable then return end
 
     -- run custom behavior functions for this zombie
     for i = 1,#ZombieTable.zombieDeath do

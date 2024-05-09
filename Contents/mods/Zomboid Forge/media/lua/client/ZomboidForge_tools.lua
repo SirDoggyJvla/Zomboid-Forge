@@ -360,7 +360,7 @@ ZomboidForge.DeleteZombieData = function(trueID)
     end
 end
 
--- Based on Chuck's and I work. Outputs the `trueID` of a `Zombie`.
+-- Based on Chuck's work. Outputs the `trueID` of a `Zombie`.
 -- Thx to the help of Shurutsue, Albion and probably others.
 --
 -- When hat of a zombie falls off, it changes it's `persistentOutfitID` but those two `pIDs` are linked.
@@ -488,16 +488,13 @@ end
 -- From CDDA Zombies.
 ZomboidForge.UpdateNametag = function()
 	for trueID,ZData in pairs(ZomboidForge.ShowNametag) do
+        if trueID == 0 then return end --skip non initialized zombies
+
 		local zombie = ZData[1]
 		local interval = ZData[2]
 
         -- get zombie data
         local nonPersistentZData = ZomboidForge.GetNonPersistentZData(trueID)
-
-        if not nonPersistentZData then
-            ZomboidForge.ShowNametag[trueID] = nil
-            return
-        end
 
         -- get zombie data
         local ZType = nonPersistentZData.ZType
