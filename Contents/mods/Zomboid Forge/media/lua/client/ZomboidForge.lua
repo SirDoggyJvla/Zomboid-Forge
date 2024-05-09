@@ -96,8 +96,6 @@ end
 ZomboidForge.ZombieInitiliaze = function(zombie,fullResetZ,rollZType)
     -- get zombie trueID
     local trueID = ZomboidForge.pID(zombie)
-    -- zombie did not get initialized by the game yet so don't touch that zombie
-    if trueID == 0 then return end
 
     -- fully reset the stats of the zombie
     if fullResetZ then
@@ -134,9 +132,6 @@ end
 ZomboidForge.ZombieUpdate = function(zombie)
     -- get zombie data
     local trueID = ZomboidForge.pID(zombie)
-    -- zombie did not get initialized by the game yet so don't touch that zombie
-    if trueID == 0 then return end
-
     local nonPersistentZData = ZomboidForge.GetNonPersistentZData(trueID)
 
     local ZType = nonPersistentZData.ZType
@@ -222,9 +217,6 @@ end
 ZomboidForge.OnHit = function(attacker, zombie, handWeapon, damage)
     if zombie:isZombie() then
         local trueID = ZomboidForge.pID(zombie)
-        -- zombie did not get initialized by the game yet so don't touch that zombie
-        if trueID == 0 then return end
-
         local nonPersistentZData = ZomboidForge.GetNonPersistentZData(trueID)
 
         local ZType = nonPersistentZData.ZType
@@ -287,10 +279,6 @@ end
 ---@param zombie        IsoZombie
 ZomboidForge.OnDeath = function(zombie)
     local trueID = ZomboidForge.pID(zombie)
-
-    -- zombie did not get initialized by the game yet so don't touch that zombie
-    if trueID == 0 then return end
-
     local nonPersistentZData = ZomboidForge.GetNonPersistentZData(trueID)
 
     local ZType = nonPersistentZData.ZType

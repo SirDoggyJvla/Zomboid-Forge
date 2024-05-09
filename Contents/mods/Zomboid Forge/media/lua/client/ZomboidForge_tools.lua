@@ -85,9 +85,6 @@ end
 ---@param ZType         string|nil [opt] Zombie Type ID
 ZomboidForge.SetZombieData = function(zombie,ZType)
     local trueID = ZomboidForge.pID(zombie)
-    -- zombie did not get initialized by the game yet so don't touch that zombie
-    if trueID == 0 then return end
-
     local nonPersistentZData = ZomboidForge.GetNonPersistentZData(trueID)
 
     -- if no ZType given, access it
@@ -372,6 +369,12 @@ end
 ZomboidForge.pID = function(zombie)
     local pID = zombie:getPersistentOutfitID()
 
+    -- if zombie is not yet initialized by the game, force it to be initialized so no issues can arise from unset zombies
+    if pID == 0 then
+        zombie:dressInRandomOutfit();
+        pID = zombie:getPersistentOutfitID()
+    end
+
     local found = ZomboidForge.TrueID[pID] and pID or ZomboidForge.HatFallen[pID]
     if found then
         return found
@@ -488,8 +491,6 @@ end
 -- From CDDA Zombies.
 ZomboidForge.UpdateNametag = function()
 	for trueID,ZData in pairs(ZomboidForge.ShowNametag) do
-        if trueID == 0 then return end --skip non initialized zombies
-
 		local zombie = ZData[1]
 		local interval = ZData[2]
 
