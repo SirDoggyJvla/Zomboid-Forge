@@ -1,72 +1,55 @@
 Sandbox_EN = {
-	Sandbox_TLOU_Zombies = "The Last of Us Infected",
-
-	Sandbox_TLOU_RunnerVision = "Runner Sight",
-	Sandbox_TLOU_RunnerHearing = "Runner Hearing",
-	Sandbox_TLOU_StalkerVision = "Stalker Sight",
-	Sandbox_TLOU_StalkerHearing = "Stalker Hearing",
-	Sandbox_TLOU_ClickerHearing = "Clicker Hearing",
-	Sandbox_TLOU_BloaterHearing = "Bloater Hearing",
-
-	Sandbox_TLOU_HearingEnum_option1 = "Eagle",
-	Sandbox_TLOU_HearingEnum_option2 = "Normal",
-	Sandbox_TLOU_HearingEnum_option3 = "Poor",
-
-	Sandbox_TLOU_EyesightEnum_option1 = "Pinpoint",
-	Sandbox_TLOU_EyesightEnum_option2 = "Normal",
-	Sandbox_TLOU_EyesightEnum_option3 = "Poor",
-
-	Sandbox_TLOU_Normal = "Normal Zombie Spawn Rate",
-	Sandbox_TLOU_Normal_tooltip = "Spawn chance for regular Project Zomboid zombies."
-
-	Sandbox_TLOU_Runner = "Runner Spawn Rate",
-	Sandbox_TLOU_Runner_tooltip = "Spawn chance for runners. Runners are your typical run-of-the-mill sprinters. Normal health and strength."
-
-	Sandbox_TLOU_Stalker = "Stalker Spawn Rate",
-	Sandbox_TLOU_Stalker_tooltip = "Maximum spawn chance for stalkers. Stalkers are like runners, but with high strength and worse vision. They will hide inside buildings (by default)."
-
-	Sandbox_TLOU_Clicker = "Clicker Spawn Rate",
-	Sandbox_TLOU_Clicker_tooltip = "Maximum spawn chance for clickers. Clickers are slow with poor eyesight, but are very strong and durable. Letting one grab you means instant death (by default). They cannot be pushed/punched (by default). Long melee weapons and/or firearms recommended."
-
-	Sandbox_TLOU_Bloater = "Bloater Spawn Rate",
-	Sandbox_TLOU_Bloater_tooltip = "Maximum spawn chance for bloaters. Bloaters have extremely high strength and HP. Immune to staggering. Melee is useless. Guns, molotovs, or explosives are your only option. They will grab and one shot you if you get within arms reach."
-
-	Sandbox_TLOU_StalkersHide = "Stalkers hide (experimental)",
-	Sandbox_TLOU_StalkersHide_tooltip = "When checked, stalkers will hide inside buildings. It's a work in progress!"
-
-	Sandbox_TLOU_OneShotClickers = "One shotting clickers",
-	Sandbox_TLOU_OneShotClickers_tooltip = "When checked, clickers will kill you with just one hit."
-
-	Sandbox_TLOU_NoPushClickers = "No pushing/stomping clickers",
-	Sandbox_TLOU_NoPushClickers_tooltip = "When checked, you will be unable to push or head stomp clickers."
-
-	Sandbox_TLOU_GrabbyClickers = "Grabby clickers",
-	Sandbox_TLOU_GrabbyClickers_tooltip = "When checked, you will be locked in place when a clicker attempts an attack. You can save yourself with knives, scissors, etc."
-
-	Sandbox_TLOU_ClickerHP = "Clicker health multiplier",
-	Sandbox_TLOU_ClickerHP_tooltip = "Multiplies the health of clickers."
-
-	Sandbox_TLOU_BloaterHP = "Bloater health multiplier",
-	Sandbox_TLOU_BloaterHP_tooltip = "Multiplies the health of bloaters. Old value was 50, which took around 12 shotgun blasts to kill."
-
-	Sandbox_TLOU_CordycepsSpawn = "Allow cordyceps item in killed infected inventory ?"
-	Sandbox_TLOU_CordycepsSpawn_tooltip = "Cordyceps items that usually spawn in corpses in Spore Zones added by Braven will be able to spawn in killed infected. Only works if Cordyceps Spore Zone by Braven is installed."
-
-	Sandbox_TLOU_CordycepsSpawnRate_Runner = "Cordyceps drop chance for Runners [in %]"
-	Sandbox_TLOU_CordycepsSpawnRate_Runner_tooltip = "If cordyceps items are allowed to spawn, chose the droprate of it in percentage for Runners."
-
-	Sandbox_TLOU_CordycepsSpawnRate_Stalker = "Cordyceps drop chance for Stalkers [in %]"
-	Sandbox_TLOU_CordycepsSpawnRate_Stalker_tooltip = "If cordyceps items are allowed to spawn, chose the droprate of it in percentage for Stalkers."
-
-	Sandbox_TLOU_CordycepsSpawnRate_Clicker = "Cordyceps drop chance for Clickers [in %]"
-	Sandbox_TLOU_CordycepsSpawnRate_Clicker_tooltip = "If cordyceps items are allowed to spawn, chose the droprate of it in percentage for Clickers."
-
-	Sandbox_TLOU_CordycepsSpawnRate_Bloater = "Cordyceps drop chance for Bloaters [in %]"
-	Sandbox_TLOU_CordycepsSpawnRate_Bloater_tooltip = "If cordyceps items are allowed to spawn, chose the droprate of it in percentage for Bloaters."
-
-
-
+	/* Page names */
 	Sandbox_ZomboidForge = "Zomboid Forge",
-	Sandbox_ZomboidForge_nametags = "Allow zombie nametags"
-	Sandbox_ZomboidForge_nametags_tooltip = "Toggling this ON will allow players to have the nametags of the various zombies. If toggled OFF, no one can see the nametags."
+	Sandbox_ZomboidForge_Stats = "Zomboid Forge [Zomboid stats]",
+
+
+	/* Nametags */
+	Sandbox_ZomboidForge_nametags = "Allow zombie nametags",
+	Sandbox_ZomboidForge_nametags_tooltip = "Toggling this ON will allow players to have the nametags of the various zombies. If toggled OFF, no one can see the nametags. Each players can also chose to disable the nametags for themselves by using Mod Options.",
+
+	Sandbox_ZomboidForge_zomboidSpawn = "Spawn Zomboids",
+	Sandbox_ZomboidForge_zomboidSpawn_tooltip = "Zomboids are defined as the base zombies in the game. You can modify their stats in the the Zomboid Forge [Zomboid Stats] sandbox options page.",
+	Sandbox_ZomboidForge_zomboidChance = "Zomboids spawn weight",
+
+
+	/* Enum options */
+	Sandbox_ZF_WalktypeEnum_option1 = "Sprinters",
+	Sandbox_ZF_WalktypeEnum_option2 = "Fast Shamblers",
+	Sandbox_ZF_WalktypeEnum_option3 = "Shamblers",
+
+	Sandbox_ZF_StrengthEnum_option1 = "Superhuman",
+	Sandbox_ZF_StrengthEnum_option2 = "Normal",
+	Sandbox_ZF_StrengthEnum_option3 = "Weak",
+
+	Sandbox_ZF_ToughnessEnum_option1 = "Tough",
+	Sandbox_ZF_ToughnessEnum_option2 = "Normal",
+	Sandbox_ZF_ToughnessEnum_option3 = "Fragile",
+
+	Sandbox_ZF_CognitionEnum_option1 = "Navigate + Use Doors",
+	Sandbox_ZF_CognitionEnum_option2 = "Navigate",
+	Sandbox_ZF_CognitionEnum_option3 = "Basic navigation",
+
+	Sandbox_ZF_MemoryEnum_option1 = "Long",
+	Sandbox_ZF_MemoryEnum_option2 = "Normal",
+	Sandbox_ZF_MemoryEnum_option3 = "Short",
+
+	Sandbox_ZF_EyesightEnum_option1 = "Pinpoint",
+	Sandbox_ZF_EyesightEnum_option2 = "Normal",
+	Sandbox_ZF_EyesightEnum_option3 = "Poor",
+
+	Sandbox_ZF_HearingEnum_option1 = "Eagle",
+	Sandbox_ZF_HearingEnum_option2 = "Normal",
+	Sandbox_ZF_HearingEnum_option3 = "Poor",
+
+
+	/* Zomboid Stats */
+	Sandbox_ZF_ZomboidWalktype = "Zomboid Speed",
+	Sandbox_ZF_ZomboidStrength = "Zomboid Strength",
+	Sandbox_ZF_ZomboidToughness = "Zomboid Toughness",
+	Sandbox_ZF_ZomboidCognition = "Zomboid Cognition",
+	Sandbox_ZF_ZomboidMemory = "Zomboid Memory",
+	Sandbox_ZF_ZomboidVision = "Zomboid Sight",
+	Sandbox_ZF_ZomboidHearing = "Zomboid Hearing",
+	Sandbox_ZF_ZomboidHP = "Zomboid health multiplier",
 }

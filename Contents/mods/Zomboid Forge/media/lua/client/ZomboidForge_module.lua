@@ -125,18 +125,6 @@ local ZomboidForge = {
                 [3] = 3,
             },
         },
-    
-        -- defines the transmission setting
-        transmission = {
-            setSandboxOption = "ZombieLore.Transmission",
-            --classField = missing,
-            returnValue = {
-                [1] = 1, -- can open doors
-                [2] = 2, -- navigate 
-                [3] = 3, -- basic navigate
-                --[4] = ZomboidForge.coinFlip(),
-            },
-        },
     }
 }
 

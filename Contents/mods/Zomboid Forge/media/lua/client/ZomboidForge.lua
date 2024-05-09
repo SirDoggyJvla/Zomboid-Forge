@@ -42,48 +42,55 @@ end
 
 --- OnLoad function to initialize the mod
 ZomboidForge.OnGameStart = function()
-    -- Update tickUpdater with Sandbox settings
-    ZomboidForge.counter = SandboxVars.ZomboidForge.tickUpdater
-
     -- Zomboid (base game zombies)
 	if SandboxVars.ZomboidForge.ZomboidSpawn then
 		ZomboidForge.ZTypes.ZF_Zomboid = {
             -- base informations
             name = "IGUI_ZF_Zomboid",
             chance = SandboxVars.ZomboidForge.ZomboidChance,
-            outfit = {},
-            reanimatedPlayer = false,
-            skeleton = false,
-            hair = {},
-            hairColor = {},
-            beard = {},
-            beardColor = {},
+            --outfit = {},
+            --reanimatedPlayer = false,
+            --skeleton = false,
+			-- hair = {
+			-- 	male = {
+			-- 		"",
+			-- 	},
+			-- 	female = {
+			-- 		"",
+			-- 	},
+			-- },
+			-- hairColor = {
+			-- 	ImmutableColor.new(Color.new(0.70, 0.70, 0.70, 1)),
+			-- },
+			-- beard = {
+			-- 	"",
+			-- },
+            --animationVariable = nil,
 
             -- stats
-            walktype = 1,
-            strength = 2,
-            toughness = 2,
-            cognition = 3,
-            memory = 2,
-            sight = 2,
-            hearing = 2,
+            walktype = SandboxVars.ZomboidForge.ZomboidWalktype,
+            strength = SandboxVars.ZomboidForge.ZomboidStrength,
+            toughness = SandboxVars.ZomboidForge.ZomboidToughness,
+            cognition = SandboxVars.ZomboidForge.ZomboidCognition,
+            memory = SandboxVars.ZomboidForge.ZomboidMemory,
+            sight = SandboxVars.ZomboidForge.ZomboidVision,
+            hearing = SandboxVars.ZomboidForge.ZomboidHearing,
 
-            noteeth = false,
-            transmission = false,
+            --noteeth = false,
 
             -- UI
             color = {255, 255, 255,},
             outline = {0, 0, 0,},
 
-            -- attack functions
-            funcattack = {},
-            funconhit = {},
+			-- attack functions
+			-- zombieAgro = {},
+			-- zombieOnHit = {},
 
-            -- custom behavior
-            onDeath = {},
-            customBehavior = {},
+			-- custom behavior
+			-- zombieDeath = {},
+			-- customBehavior = {},
 
-            customData = {},
+			-- customData = {},
         }
 	end
 end
@@ -144,8 +151,10 @@ ZomboidForge.ZombieUpdate = function(zombie)
     local ZombieTable = ZomboidForge.ZTypes[ZType]
 
     -- run custom behavior functions for this zombie
-    for i = 1,#ZombieTable.customBehavior do
-        ZomboidForge[ZombieTable.customBehavior[i]](zombie,ZType)
+    if ZombieTable.customBehavior then
+        for i = 1,#ZombieTable.customBehavior do
+            ZomboidForge[ZombieTable.customBehavior[i]](zombie,ZType)
+        end
     end
 
     -- run zombie attack functions
@@ -238,7 +247,7 @@ ZomboidForge.OnHit = function(attacker, zombie, handWeapon, damage)
             if HP and HP ~= 1 and handWeapon:getFullType() ~= "Base.BareHands" then
                 -- get or set HP amount
 
-                -- get damage if exists
+                -- use custom damage function if exists
                 if ZombieTable.customDamage then
                     damage = ZomboidForge[ZombieTable.customDamage](attacker, zombie, handWeapon, damage)
                 end
@@ -261,7 +270,10 @@ ZomboidForge.OnHit = function(attacker, zombie, handWeapon, damage)
                     HP = HP - damage
 
                     if HP <= 0 then
+                        -- reset emitters
+                        zombie:getEmitter():stopAll()
                         zombie:Kill(attacker)
+                        
                     else
                         -- Makes sure the Zombie doesn't get oneshoted by whatever bullshit weapon
                         -- someone might use.
@@ -279,6 +291,7 @@ end
 ---@param zombie        IsoZombie
 ZomboidForge.OnDeath = function(zombie)
     local trueID = ZomboidForge.pID(zombie)
+
     local nonPersistentZData = ZomboidForge.GetNonPersistentZData(trueID)
 
     local ZType = nonPersistentZData.ZType
@@ -289,12 +302,13 @@ ZomboidForge.OnDeath = function(zombie)
     end
 
     local ZombieTable = ZomboidForge.ZTypes[ZType]
-    if not ZombieTable then return end
-
-    -- run custom behavior functions for this zombie
-    for i = 1,#ZombieTable.zombieDeath do
-        ZomboidForge[ZombieTable.zombieDeath[i]](zombie,ZType)
+    if ZombieTable.zombieDeath then
+        -- run custom behavior functions for this zombie
+        for i = 1,#ZombieTable.zombieDeath do
+            ZomboidForge[ZombieTable.zombieDeath[i]](zombie,ZType)
+        end
     end
+
     -- reset emitters
     zombie:getEmitter():stopAll()
 

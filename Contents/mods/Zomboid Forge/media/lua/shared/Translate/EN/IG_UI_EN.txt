@@ -1,12 +1,9 @@
 IGUI_EN = {
-    -- infected types names
-	IGUI_TLOU_Runner = "Runner",
-    IGUI_TLOU_Stalker = "Stalker",
-    IGUI_TLOU_Clicker = "Clicker",
-    IGUI_TLOU_Bloater = "Bloater",
+	-- Zomboid nametag
+	IGUI_ZF_Zomboid = "Zomboid",
 
     -- mod options
-	IGUI_ZomboidForge_Zombie= "The Last of Us Infected"
+	IGUI_ZomboidForge_Zombie= "Zomboid Forge"
     IGUI_ZomboidForge_NameTag= "Show Zombie Type",
 	IGUI_ZomboidForge_NameTag_Tooltip= "Show the type of zombie that the player is aiming at",
 	IGUI_ZomboidForge_TextHeight = "NameTag Height"

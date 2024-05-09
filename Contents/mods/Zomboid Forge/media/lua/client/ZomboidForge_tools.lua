@@ -108,7 +108,7 @@ ZomboidForge.SetZombieData = function(zombie,ZType)
     end
 
     -- set zombie clothing
-    if #ZombieTable.outfit > 0 then
+    if ZombieTable.outfit then
         local currentOutfit = zombie:getOutfitName()
         local outfitChoice = ZomboidForge.RandomizeTable(ZombieTable,"outfit",currentOutfit)
         if outfitChoice then
@@ -143,7 +143,7 @@ ZomboidForge.SetZombieData = function(zombie,ZType)
     end
 
     -- set hair color
-    if #ZombieTable.hairColor > 0 then
+    if ZombieTable.hairColor then
         local zombieVisual = zombie:getHumanVisual()
         local currentHairColor = zombieVisual:getHairColor()
         local hairColorChoice = ZomboidForge.RandomizeTable(ZombieTable,"hairColor",currentHairColor)
@@ -154,7 +154,7 @@ ZomboidForge.SetZombieData = function(zombie,ZType)
     end
 
     -- set beard if male
-    if #ZombieTable.beard > 0 and not zombie:isFemale() then
+    if ZombieTable.beard and not zombie:isFemale() then
         local zombieVisual = zombie:getHumanVisual()
         local currentBeard = zombieVisual:getBeardModel()
         local beardChoice = ZomboidForge.RandomizeTable(ZombieTable,"beard",currentBeard)
@@ -165,7 +165,7 @@ ZomboidForge.SetZombieData = function(zombie,ZType)
     end
 
     -- set beard color if male
-    if #ZombieTable.beardColor > 0 and not zombie:isFemale() then
+    if ZombieTable.beardColor and not zombie:isFemale() then
         local zombieVisual = zombie:getHumanVisual()
         local currentBeardColor = zombieVisual:getHairColor()
         local beardColorChoice = ZomboidForge.RandomizeTable(ZombieTable,"beardColor",currentBeardColor)
@@ -177,12 +177,10 @@ ZomboidForge.SetZombieData = function(zombie,ZType)
 
     -- set zombie HP extremely high to make sure it doesn't get oneshoted if it has custom
     -- HP, handled via the attack functions
-    if ZombieTable.HP and ZombieTable.HP ~= 1 and zombie:isAlive() then
-        if zombie:getHealth() ~= 1000 then
-            zombie:setHealth(1000)
-        end
+    if ZombieTable.HP and ZombieTable.HP ~= 1 and zombie:isAlive() and zombie:getHealth() ~= 1000 then
+        zombie:setHealth(1000)
     end
-    
+
     -- custom animation variable
     local animVariable = ZombieTable.animationVariable
     if animVariable then
@@ -195,8 +193,10 @@ ZomboidForge.SetZombieData = function(zombie,ZType)
     end
 
     -- run custom data if any
-    for i = 1,#ZombieTable.customData do
-        ZomboidForge[ZombieTable.customData[i]](zombie,ZType)
+    if ZombieTable.customData then
+        for i = 1,#ZombieTable.customData do
+            ZomboidForge[ZombieTable.customData[i]](zombie,ZType)
+        end
     end
 end
 
@@ -239,17 +239,6 @@ ZomboidForge.UpdateZombieStats = function(zombie,ZType)
     local trueID = ZomboidForge.pID(zombie)
     local nonPersistentZData = ZomboidForge.NonPersistentZData[trueID]
 
-    -- GlobalCheck, if true then stats are already checked
-    if nonPersistentZData.GlobalCheck then return end
-
-    -- get info if stat already checked for each stats
-    -- else initialize it
-    local statChecked = nonPersistentZData.statChecked
-    if not statChecked then
-        nonPersistentZData.statChecked = {}
-        statChecked = nonPersistentZData.statChecked
-    end
-
     -- for every stats available to update
     local ZombieTable = ZomboidForge.ZTypes[ZType]
     for k,_ in pairs(ZomboidForge.Stats) do
@@ -285,20 +274,6 @@ ZomboidForge.UpdateZombieStats = function(zombie,ZType)
     end
     zombie:makeInactive(true)
     zombie:makeInactive(false)
-    -- update multiCheck counter for each stats
-    local multiCheck = nonPersistentZData.multiCheck
-    if not multiCheck then
-        multiCheck = 0
-    end
-    if multiCheck >= 10 then
-        -- stop checking stats for this zombie
-        nonPersistentZData.GlobalCheck = true
-        nonPersistentZData.multiCheck = nil
-    else
-        -- increment multiCheck counter
-        multiCheck = multiCheck + 1
-        nonPersistentZData.multiCheck = multiCheck
-    end
 end
 
 --#region Tools
@@ -395,17 +370,6 @@ ZomboidForge.pID = function(zombie)
     --ZomboidForge.TrueID[pID] = trueID
     return trueID
 end
-
--- Global counter that is used by the framework to delay updates on specific stuff like stats but can be used
--- by other addons to delay update some stuff.
--- Added to OnTick.
-ZomboidForge.counterUpdater = function()
-    ZomboidForge.counter = ZomboidForge.counter - 1
-    if ZomboidForge.counter < 0 then
-        ZomboidForge.counter = SandboxVars.ZomboidForge.tickUpdater
-    end
-end
---#endregion
 
 --#region Nametag handling
 

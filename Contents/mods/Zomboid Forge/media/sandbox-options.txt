@@ -1,15 +1,8 @@
 VERSION = 1,
 
-option ZomboidForge.tickUpdater
-{
-	type = integer,
-	min = 0,
-	max = 2000,
-	default = 500,
-	page = ZomboidForge,
-	translation = ZomboidForge_tickUpdater,
-}
-
+/*---------------------------------------------------------------------
+-- Base sandbox options
+---------------------------------------------------------------------*/
 option ZomboidForge.Nametags
 {
 	type = boolean,
@@ -17,8 +10,6 @@ option ZomboidForge.Nametags
 	page = ZomboidForge,
 	translation = ZomboidForge_nametags,
 }
-
-
 
 option ZomboidForge.ZomboidSpawn
 {
@@ -36,4 +27,89 @@ option ZomboidForge.ZomboidChance
 	default = 500,
 	page = ZomboidForge,
 	translation = ZomboidForge_zomboidChance,
+}
+
+
+
+/*---------------------------------------------------------------------
+-- Zomboid Stats
+---------------------------------------------------------------------*/
+option ZomboidForge.ZomboidWalktype
+{
+	type = enum,
+	numValues = 3,
+	default = 2,
+	page = ZomboidForge_Stats,
+	translation = ZF_ZomboidWalktype,
+	valueTranslation = ZF_WalktypeEnum,
+}
+
+option ZomboidForge.ZomboidStrength
+{
+	type = enum,
+	numValues = 3,
+	default = 2,
+	page = ZomboidForge_Stats,
+	translation = ZF_ZomboidStrength,
+	valueTranslation = ZF_StrengthEnum,
+}
+
+option ZomboidForge.ZomboidToughness
+{
+	type = enum,
+	numValues = 3,
+	default = 2,
+	page = ZomboidForge_Stats,
+	translation = ZF_ZomboidToughness,
+	valueTranslation = ZF_ToughnessEnum,
+}
+
+option ZomboidForge.ZomboidCognition
+{
+	type = enum,
+	numValues = 3,
+	default = 2,
+	page = ZomboidForge_Stats,
+	translation = ZF_ZomboidCognition,
+	valueTranslation = ZF_CognitionEnum,
+}
+
+option ZomboidForge.ZomboidMemory
+{
+	type = enum,
+	numValues = 3,
+	default = 2,
+	page = ZomboidForge_Stats,
+	translation = ZF_ZomboidMemory,
+	valueTranslation = ZF_MemoryEnum,
+}
+
+option ZomboidForge.ZomboidVision
+{
+	type = enum,
+	numValues = 3,
+	default = 2,
+	page = ZomboidForge_Stats,
+	translation = ZF_ZomboidVision,
+	valueTranslation = ZF_EyesightEnum,
+}
+
+option ZomboidForge.ZomboidHearing
+{
+	type = enum,
+	numValues = 3,
+	default = 2,
+	page = ZomboidForge_Stats,
+	translation = ZF_ZomboidHearing,
+	valueTranslation = ZF_HearingEnum,
+}
+
+option ZomboidForge.ZomboidHealth
+{
+	type = integer,
+	min = 1,
+	max = 1000,
+	default = 1,
+	page = ZomboidForge_Stats,
+	translation = ZF_ZomboidHP,
 }
