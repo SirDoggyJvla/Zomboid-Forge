@@ -21,11 +21,15 @@ local tostring = tostring --tostring function
 
 --- import module from ZomboidForge
 local ZomboidForge = require "ZomboidForge_module"
+local ZFModData
+
+ZomboidForge.initModData_ZomboidForge = function()
+    ZFModData = ModData.getOrCreate("ZomboidForge")
+end
 
 --- OnLoad function to initialize the mod
 ZomboidForge.OnLoad = function()
     -- initialize ModData
-    local ZFModData = ModData.getOrCreate("ZomboidForge")
     if not ZFModData.PersistentZData then
         ZFModData.PersistentZData = {}
     end
@@ -273,12 +277,12 @@ ZomboidForge.OnHit = function(attacker, zombie, handWeapon, damage)
                         -- reset emitters
                         zombie:getEmitter():stopAll()
                         zombie:Kill(attacker)
-                        
                     else
                         -- Makes sure the Zombie doesn't get oneshoted by whatever bullshit weapon
                         -- someone might use.
                         -- Updates the HP counter of PersistentZData
-                        zombie:setHealth(1000)
+                        zombie:setHealth(ZomboidForge.InfiniteHP)
+                        zombie:setAttackedBy(getCell():getFakeZombieForHit())
                         PersistentZData.HP = HP
                     end
                 end

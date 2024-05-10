@@ -20,10 +20,11 @@ local print = print -- print function
 local tostring = tostring --tostring function
 
 --- main module for use in storing informations and pass along other files
-local ZomboidForge_server = {}
-
--- initialize command module
-ZomboidForge_server.Commands = {}
-ZomboidForge_server.Commands.ZombieHandler = {}
+local ZomboidForge_server = {
+    InfiniteHP = 50,
+    Commands = {
+        ZombieHandler = {},
+    },
+}
 
 return ZomboidForge_server

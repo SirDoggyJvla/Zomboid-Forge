@@ -22,6 +22,8 @@ local tostring = tostring --tostring function
 --- import module
 local ZomboidForge_server = require "ZomboidForgeServer_module"
 
+Events.OnInitGlobalModData.Add(ZomboidForge_server.initModData_ZomboidForgeServer_commands)
+
 Events.OnClientCommand.Add(function(module, command, player, args)
 	if ZomboidForge_server.Commands[module] and ZomboidForge_server.Commands[module][command] then
 	    ZomboidForge_server.Commands[module][command](player, args)

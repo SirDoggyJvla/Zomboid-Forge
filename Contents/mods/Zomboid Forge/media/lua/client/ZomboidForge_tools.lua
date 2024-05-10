@@ -22,12 +22,17 @@ local Long = Long --Long for pID
 
 --- import module from ZomboidForge
 local ZomboidForge = require "ZomboidForge_module"
+local ZFModData
+
+ZomboidForge.initModData_ZomboidForge_tools = function()
+    ZFModData = ModData.getOrCreate("ZomboidForge")
+end
 
 local A1, A2 = 727595, 798405  -- 5^17=D20*A1+A2
 local D20, D40 = 1048576, 1099511627776  -- 2^20, 2^40
 -- Seeded random used in determining the `ZType` of a zombie.
 ---@param trueID        int
-function ZomboidForge.seededRand(trueID)
+ZomboidForge.seededRand = function(trueID)
     trueID = math.abs(trueID)
     local V = (trueID*A2 + A1) % D20
     V = (V*D20 + A2) % D40
@@ -178,7 +183,8 @@ ZomboidForge.SetZombieData = function(zombie,ZType)
     -- set zombie HP extremely high to make sure it doesn't get oneshoted if it has custom
     -- HP, handled via the attack functions
     if ZombieTable.HP and ZombieTable.HP ~= 1 and zombie:isAlive() and zombie:getHealth() ~= 1000 then
-        zombie:setHealth(1000)
+        zombie:setHealth(ZomboidForge.InfiniteHP)
+        zombie:setAttackedBy(getCell():getFakeZombieForHit())
     end
 
     -- custom animation variable
@@ -187,7 +193,7 @@ ZomboidForge.SetZombieData = function(zombie,ZType)
         if not zombie:getVariableBoolean(animVariable) then
             zombie:setVariable(animVariable,'true')
             if isClient() then
-                sendClientCommand('ZombieHandler', 'SetAnimationVariable', {animationVariable = ZombieTable.animationVariable, zombie = zombie:getOnlineID()})
+                --sendClientCommand('ZombieHandler', 'SetAnimationVariable', {animationVariable = ZombieTable.animationVariable, zombie = zombie:getOnlineID()})
             end
         end
     end
@@ -235,10 +241,6 @@ end
 ---@param zombie        IsoZombie
 ---@param ZType         string      --Zombie Type ID
 ZomboidForge.UpdateZombieStats = function(zombie,ZType)
-    -- get zombie info
-    local trueID = ZomboidForge.pID(zombie)
-    local nonPersistentZData = ZomboidForge.NonPersistentZData[trueID]
-
     -- for every stats available to update
     local ZombieTable = ZomboidForge.ZTypes[ZType]
     for k,_ in pairs(ZomboidForge.Stats) do
@@ -282,7 +284,6 @@ end
 ---@param trueID        int
 ---@return table
 ZomboidForge.GetPersistentZData = function(trueID)
-    local ZFModData = ModData.getOrCreate("ZomboidForge")
     if not ZFModData.PersistentZData then
         ZFModData.PersistentZData = {}
     end
@@ -311,7 +312,6 @@ ZomboidForge.ResetZombieData = function(trueID)
     ZomboidForge.NonPersistentZData[trueID] = {}
 
     -- reset persistent zombie data
-    local ZFModData = ModData.getOrCreate("ZomboidForge")
     local PersistentZData = ZFModData.PersistentZData
     if PersistentZData and PersistentZData[trueID] then
         PersistentZData[trueID] = {}
@@ -325,7 +325,6 @@ ZomboidForge.DeleteZombieData = function(trueID)
     ZomboidForge.NonPersistentZData[trueID] = nil
 
     -- delete persistent zombie data
-    local ZFModData = ModData.getOrCreate("ZomboidForge")
     local PersistentZData = ZFModData.PersistentZData
     if PersistentZData and PersistentZData[trueID] then
         PersistentZData[trueID] = nil

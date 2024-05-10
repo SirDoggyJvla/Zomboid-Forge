@@ -19,6 +19,8 @@ local ZomboidForge = require "ZomboidForge_module"
 --- On start Events
 Events.OnLoad.Add(ZomboidForge.OnLoad)
 Events.OnGameStart.Add(ZomboidForge.OnGameStart)
+Events.OnInitGlobalModData.Add(ZomboidForge.initModData_ZomboidForge)
+Events.OnInitGlobalModData.Add(ZomboidForge.initModData_ZomboidForge_tools)
 
 --- Main Events handling
 Events.OnZombieUpdate.Add(ZomboidForge.ZombieUpdate)

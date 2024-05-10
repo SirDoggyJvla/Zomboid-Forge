@@ -21,6 +21,11 @@ local tostring = tostring --tostring function
 
 --- import module
 local ZomboidForge_server = require "ZomboidForgeServer_module"
+local ZFModData
+
+ZomboidForge_server.initModData_ZomboidForgeServer_commands = function()
+    ZFModData = ModData.getOrCreate("ZomboidForge")
+end
 
 --#region Server side commands
 -- ZomboidForge.Commands.module.command
@@ -37,7 +42,6 @@ end
 
 ZomboidForge_server.Commands.ZombieHandler.DamageZombie = function(player,args)
 	-- get zombie data
-	local ZFModData = ModData.getOrCreate("ZomboidForge")
 	if not ZFModData.PersistentZData then
 		ZFModData.PersistentZData = {}
 	end
@@ -60,7 +64,7 @@ ZomboidForge_server.Commands.ZombieHandler.DamageZombie = function(player,args)
 		attacker = player:getOnlineID(),
 		zombie = args.zombie,
 		kill = kill,
-		HP = 1000,
+		HP = ZomboidForge_server.InfiniteHP,
 	}
 	sendServerCommand('ZombieHandler', 'SetZombieHP', args)
 
