@@ -62,8 +62,16 @@ ZomboidForge.Commands.ZombieHandler.SetZombieHP = function(args)
         if args.kill then
             zombie:Kill(getPlayerByOnlineID(args.attacker))
         else
-            zombie:setHealth(args.HP)
-            zombie:setAttackedBy(getCell():getFakeZombieForHit())
+            --zombie:setHealth(args.HP)
+            --zombie:setAttackedBy(getCell():getFakeZombieForHit())
+
+            if not zombie:avoidDamage() then
+                zombie:setAvoidDamage(true)
+            end
+
+            if not args.shouldNotStagger then
+                zombie:setStaggerBack(true)
+            end
         end
     end
 end

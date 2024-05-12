@@ -22,7 +22,7 @@ local Long = Long --Long for pID
 
 --- import module from ZomboidForge
 local ZomboidForge = require "ZomboidForge_module"
-local ZFModData
+local ZFModData = ModData.getOrCreate("ZomboidForge")
 
 ZomboidForge.initModData_ZomboidForge_tools = function()
     ZFModData = ModData.getOrCreate("ZomboidForge")
@@ -183,8 +183,9 @@ ZomboidForge.SetZombieData = function(zombie,ZType)
     -- set zombie HP extremely high to make sure it doesn't get oneshoted if it has custom
     -- HP, handled via the attack functions
     if ZombieTable.HP and ZombieTable.HP ~= 1 and zombie:isAlive() and zombie:getHealth() ~= 1000 then
-        zombie:setHealth(ZomboidForge.InfiniteHP)
-        zombie:setAttackedBy(getCell():getFakeZombieForHit())
+        if not zombie:avoidDamage() then
+            zombie:setAvoidDamage(true)
+        end
     end
 
     -- custom animation variable

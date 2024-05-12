@@ -21,7 +21,7 @@ local tostring = tostring --tostring function
 
 --- import module from ZomboidForge
 local ZomboidForge = require "ZomboidForge_module"
-local ZFModData
+local ZFModData = ModData.getOrCreate("ZomboidForge")
 
 ZomboidForge.initModData_ZomboidForge = function()
     ZFModData = ModData.getOrCreate("ZomboidForge")
@@ -249,8 +249,6 @@ ZomboidForge.OnHit = function(attacker, zombie, handWeapon, damage)
             -- skip if no HP stat or HP is 1
             local HP = ZombieTable.HP
             if HP and HP ~= 1 and handWeapon:getFullType() ~= "Base.BareHands" then
-                -- get or set HP amount
-
                 -- use custom damage function if exists
                 if ZombieTable.customDamage then
                     damage = ZomboidForge[ZombieTable.customDamage](attacker, zombie, handWeapon, damage)
@@ -258,11 +256,13 @@ ZomboidForge.OnHit = function(attacker, zombie, handWeapon, damage)
 
                 -- set zombie health or kill zombie
                 if isClient() then
+                    zombie:addLineChatElement("damage = "..damage)
                     local args = {
                         damage = damage,
                         trueID = trueID,
                         zombie = zombie:getOnlineID(),
                         defaultHP = HP,
+                        shouldNotStagger = ZombieTable.shouldNotStagger,
                     }
 
                     sendClientCommand('ZombieHandler', 'DamageZombie', args)

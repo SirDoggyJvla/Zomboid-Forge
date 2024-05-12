@@ -129,7 +129,7 @@ local ZomboidForge = {
 }
 
 if isClient() then
-    ZomboidForge.InfiniteHP = 50
+    ZomboidForge.InfiniteHP = 1
 else
     ZomboidForge.InfiniteHP = 100
 end

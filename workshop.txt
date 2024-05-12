@@ -1,47 +1,47 @@
 version=1
 id=3243131044
 title=Zomboid Forge
-description=[h1]What does this mod do ?[/h1]
-description=Zomboid Forge is a framework that allows modders to easily add custom zombies that are compatible with each other while maintaining organized and optimized code. On its own, this mod doesn't perform any specific function, but it provides modders with the necessary tools to ensure they can incorporate synchronized and persistent custom zombies into the game without these zombies being altered or reset upon reloading, which can happen when IsoZombie is redistributed.
-description=
-description=[h2]Neat tools are available to create the custom zombies and will be detailed in an upcoming guide.[/h2]
-description=
-description=
-description=[h1]Big thanks to the modding community[/h1]
-description=[url=https://discord.com/invite/SReMnbV4V7][img]https://raw.githubusercontent.com/Chuckleberry-Finn/chuckImages/main/PZmodCommBanner2.png[/img][/url]
-description=This project would have never been possible without the help of many individuals from the Modding Discord. This mod was worked on alongside The Last of Us Infected and many helped on both projects or only one of those, but all had huge impact on the development by teaching me a lot on the game.
-description=
-description=Those who helped the most on the project are:
-description=[h3]Help on the coding[/h3]
-description=[list]
-description=[*] [url=https://steamcommunity.com/id/Chuckleberry_Finn/]Chuck[/url]
-description=[*] [url=https://steamcommunity.com/id/demiurgeQuantified/]Albion[/url]
-description=[*] [url=https://steamcommunity.com/id/Shurutsue/]Shurutsue[/url]
-description=[*] [url=https://steamcommunity.com/id/itsmedirtydan/]Nurver[/url]
-description=[*] [url=https://steamcommunity.com/id/zendachi/]Burryaga[/url]
-description=[*] Hugo Qwerty
-description=[*] [url=https://steamcommunity.com/profiles/76561198329871201/]Tchernobill[/url]
-description=[*] [url=https://steamcommunity.com/profiles/76561199218026428/]Poltergeist[/url]
-description=[*] Alree
-description=[*] [url=https://steamcommunity.com/profiles/76561197965618304]TheDecentTech[/url]
-description=[*] lect
-description=[*] [url=https://steamcommunity.com/id/JabJabJab/]Jab[/url]
-description=[/list]
-description=
-description=[h3]Help on the animations/Blender[/h3]
-description=[list]
-description=[*] Alphoxis
-description=[*] [url=https://steamcommunity.com/id/404cucknotfound/]CrystalChris[/url]
-description=[*] [url=https://steamcommunity.com/id/Zmilez]Mystery[/url]
-description=[*] [url=https://steamcommunity.com/id/Glytch3r]GlyTch3r[/url]
-description=[/list]
-description=
-description=[h3]Help on other random stuff[/h3]
-description=[list]
-description=[*] [url=https://steamcommunity.com/profiles/76561198148247268]Herr Jordel[/url]
-description=[*] [url=https://steamcommunity.com/id/freathgreut]Nerm[/url]
-description=[*] [url=https://steamcommunity.com/id/pale_jack/]Pale Jack[/url]
-description=[*] [url=https://steamcommunity.com/id/whatthehellisthisshit/]grewsome[/url]
-description=[/list]
+description=[h1]What does this mod do ?[/h1]
+description=Zomboid Forge is a framework that allows modders to easily add custom zombies that are compatible with each other while maintaining organized and optimized code. On its own, this mod doesn't perform any specific function, but it provides modders with the necessary tools to ensure they can incorporate synchronized and persistent custom zombies into the game without these zombies being altered or reset upon reloading, which can happen when IsoZombie is redistributed.
+description=
+description=[h2]Neat tools are available to create the custom zombies and will be detailed in an upcoming guide.[/h2]
+description=
+description=
+description=[h1]Big thanks to the modding community[/h1]
+description=[url=https://discord.com/invite/SReMnbV4V7][img]https://raw.githubusercontent.com/Chuckleberry-Finn/chuckImages/main/PZmodCommBanner2.png[/img][/url]
+description=This project would have never been possible without the help of many individuals from the Modding Discord. This mod was worked on alongside The Last of Us Infected and many helped on both projects or only one of those, but all had huge impact on the development by teaching me a lot on the game.
+description=
+description=Those who helped the most on the project are:
+description=[h3]Help on the coding[/h3]
+description=[list]
+description=[*] [url=https://steamcommunity.com/id/Chuckleberry_Finn/]Chuck[/url]
+description=[*] [url=https://steamcommunity.com/id/demiurgeQuantified/]Albion[/url]
+description=[*] [url=https://steamcommunity.com/id/Shurutsue/]Shurutsue[/url]
+description=[*] [url=https://steamcommunity.com/id/itsmedirtydan/]Nurver[/url]
+description=[*] [url=https://steamcommunity.com/id/zendachi/]Burryaga[/url]
+description=[*] Hugo Qwerty
+description=[*] [url=https://steamcommunity.com/profiles/76561198329871201/]Tchernobill[/url]
+description=[*] [url=https://steamcommunity.com/profiles/76561199218026428/]Poltergeist[/url]
+description=[*] Alree
+description=[*] [url=https://steamcommunity.com/profiles/76561197965618304]TheDecentTech[/url]
+description=[*] lect
+description=[*] [url=https://steamcommunity.com/id/JabJabJab/]Jab[/url]
+description=[/list]
+description=
+description=[h3]Help on the animations/Blender[/h3]
+description=[list]
+description=[*] Alphoxis
+description=[*] [url=https://steamcommunity.com/id/404cucknotfound/]CrystalChris[/url]
+description=[*] [url=https://steamcommunity.com/id/Zmilez]Mystery[/url]
+description=[*] [url=https://steamcommunity.com/id/Glytch3r]GlyTch3r[/url]
+description=[/list]
+description=
+description=[h3]Help on other random stuff[/h3]
+description=[list]
+description=[*] [url=https://steamcommunity.com/profiles/76561198148247268]Herr Jordel[/url]
+description=[*] [url=https://steamcommunity.com/id/freathgreut]Nerm[/url]
+description=[*] [url=https://steamcommunity.com/id/pale_jack/]Pale Jack[/url]
+description=[*] [url=https://steamcommunity.com/id/whatthehellisthisshit/]grewsome[/url]
+description=[/list]
 tags=Build 41;Framework;Interface;Misc;Multiplayer
 visibility=public

@@ -11,6 +11,8 @@ This file defines the events of Zomboid Forge server side
 ]]--
 --[[ ================================================ ]]--
 
+if isClient() then return end
+
 --- Import functions localy for performances reasons
 local table = table -- Lua's table module
 local ipairs = ipairs -- ipairs function

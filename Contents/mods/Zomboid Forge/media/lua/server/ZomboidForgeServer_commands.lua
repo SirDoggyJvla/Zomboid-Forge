@@ -11,6 +11,8 @@ This file defines the server side lua of ZomboidForge.
 ]]--
 --[[ ================================================ ]]--
 
+if isClient() then return end
+
 --- Import functions localy for performances reasons
 local table = table -- Lua's table module
 local ipairs = ipairs -- ipairs function
@@ -21,7 +23,7 @@ local tostring = tostring --tostring function
 
 --- import module
 local ZomboidForge_server = require "ZomboidForgeServer_module"
-local ZFModData
+local ZFModData = ModData.getOrCreate("ZomboidForge")
 
 ZomboidForge_server.initModData_ZomboidForgeServer_commands = function()
     ZFModData = ModData.getOrCreate("ZomboidForge")
@@ -41,13 +43,15 @@ ZomboidForge_server.Commands.ZombieHandler.RemoveEmitters = function(player, arg
 end
 
 ZomboidForge_server.Commands.ZombieHandler.DamageZombie = function(player,args)
+	local trueID = args.trueID
 	-- get zombie data
 	if not ZFModData.PersistentZData then
 		ZFModData.PersistentZData = {}
 	end
-	local PersistentZData = ZFModData.PersistentZData[args.trueID]
+	local PersistentZData = ZFModData.PersistentZData[trueID]
 	if not PersistentZData then
-		PersistentZData = {}
+		ZFModData.PersistentZData[trueID] = {}
+		PersistentZData = ZFModData.PersistentZData[trueID]
 	end
 
 	-- get zombie HP
@@ -64,7 +68,7 @@ ZomboidForge_server.Commands.ZombieHandler.DamageZombie = function(player,args)
 		attacker = player:getOnlineID(),
 		zombie = args.zombie,
 		kill = kill,
-		HP = ZomboidForge_server.InfiniteHP,
+		shouldNotStagger = args.shouldNotStagger,
 	}
 	sendServerCommand('ZombieHandler', 'SetZombieHP', args)
 

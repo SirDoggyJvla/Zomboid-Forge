@@ -11,6 +11,8 @@ This file defines the module of Zomboid Forge server side
 ]]--
 --[[ ================================================ ]]--
 
+if isClient() then return end
+
 --- Import functions localy for performances reasons
 local table = table -- Lua's table module
 local ipairs = ipairs -- ipairs function
@@ -21,7 +23,7 @@ local tostring = tostring --tostring function
 
 --- main module for use in storing informations and pass along other files
 local ZomboidForge_server = {
-    InfiniteHP = 50,
+    InfiniteHP = 1,
     Commands = {
         ZombieHandler = {},
     },
