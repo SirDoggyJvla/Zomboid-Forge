@@ -207,6 +207,18 @@ ZomboidForge.SetZombieData = function(zombie,ZType)
     end
 end
 
+-- Test that a value is present within an array-like table.
+---@param table         table
+---@param value         any
+ZomboidForge.CheckInTable = function(table,value)
+    for _, v in ipairs(table) do
+        if v == value then
+            return true
+        end
+    end
+    return false
+end
+
 --- Randomly choses a `Zombie` `ZData` within a ZType data table if current is not already in the table.
 ---@param ZDataTable    table       --Zombie Table to randomize
 ---@param ZData         string      --Chosen data in ZType table
