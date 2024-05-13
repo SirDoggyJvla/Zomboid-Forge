@@ -256,7 +256,6 @@ ZomboidForge.OnHit = function(attacker, zombie, handWeapon, damage)
 
                 -- set zombie health or kill zombie
                 if isClient() then
-                    zombie:addLineChatElement("damage = "..damage)
                     local args = {
                         damage = damage,
                         trueID = trueID,
