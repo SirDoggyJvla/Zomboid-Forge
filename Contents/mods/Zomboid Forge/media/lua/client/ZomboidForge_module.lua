@@ -45,7 +45,7 @@ local ZomboidForge = {
                 [4] = 2, -- crawlers, speed doesn't matter
             },
         },
-    
+
         -- defines the sight setting
         sight = {
             setSandboxOption = "ZombieLore.Sight",
@@ -57,7 +57,7 @@ local ZomboidForge = {
                 --[4] = ZomboidForge.coinFlip(),
             },
         },
-    
+
         -- defines the sight setting
         hearing = {
             setSandboxOption = "ZombieLore.Hearing",
@@ -69,7 +69,7 @@ local ZomboidForge = {
                 --[4] = ZomboidForge.coinFlip(),
             },
         },
-    
+
         -- defines cognition aka navigation of zombie
         --
         -- navigate = basic navigate.
@@ -78,18 +78,18 @@ local ZomboidForge = {
             setSandboxOption = "ZombieLore.Cognition",
             classField = "cognition",
             returnValue = {
-                [1] = 1, -- can open doors
+                [1] = 1, -- can open doors (navigate + use doors)
                 [2] = -1, -- navigate 
                 [3] = -1, -- basic navigate
                 --[4] = ZomboidForge.coinFlip(),
             },
         },
-    
+
         --- UNVERIFIABLE STATS
         -- these stats can't be checked if already updated because
         -- of how the fields are updated or if they don't have any
         -- class fields to check them.
-        
+
         -- defines the memory setting
         memory = {
             setSandboxOption = "ZombieLore.Memory",
@@ -101,7 +101,7 @@ local ZomboidForge = {
                 [4] = 25, -- none
             },
         },
-    
+
         -- defines strength of zombie
         -- undefined, causes issues when toughness is modified
         strength = {
@@ -113,7 +113,7 @@ local ZomboidForge = {
                 [3] = 1, -- Weak
             },
         },
-    
+
         -- defines toughness of zombie
         -- undefined
         toughness = {
