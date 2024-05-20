@@ -16,7 +16,6 @@ local table = table -- Lua's table module
 local ipairs = ipairs -- ipairs function
 local pairs = pairs -- pairs function
 local ZombRand = ZombRand -- java function
-local print = print -- print function
 local tostring = tostring --tostring function
 local Long = Long --Long for pID
 
@@ -58,7 +57,16 @@ end
 -- Get the ZType of a zombie.
 ---@param trueID            int
 ZomboidForge.GetZType = function(trueID)
+    local nonPersistentZData = ZomboidForge.GetNonPersistentZData(trueID)
 
+    local ZType = nonPersistentZData.ZType
+    -- initialize zombie if no ZType
+    if not ZType then
+        nonPersistentZData.ZType = ZomboidForge.RollZType(trueID)
+    end
+    ZType = nonPersistentZData.ZType
+
+    return ZType
 end
 
 -- Sets the `ZType` of a specified `zombie`.
@@ -94,10 +102,8 @@ ZomboidForge.SetZombieData = function(zombie,ZType)
 
     -- if no ZType given, access it
     if not ZType then
-
         if not nonPersistentZData.ZType then
             ZomboidForge.ZombieInitiliaze(zombie,true,true)
-            return
         end
         ZType = nonPersistentZData.ZType
     end
@@ -182,9 +188,12 @@ ZomboidForge.SetZombieData = function(zombie,ZType)
 
     -- set zombie HP extremely high to make sure it doesn't get oneshoted if it has custom
     -- HP, handled via the attack functions
-    if ZombieTable.HP and ZombieTable.HP ~= 1 and zombie:isAlive() and zombie:getHealth() ~= 1000 then
-        if not zombie:avoidDamage() then
+    if ZombieTable.HP and ZombieTable.HP ~= 1 then
+        if isClient() and not zombie:avoidDamage() then
             zombie:setAvoidDamage(true)
+        elseif not isClient() and zombie:getHealth() ~= ZomboidForge.InfiniteHP then
+            ZomboidForge.InfiniteHP = 300
+            zombie:setHealth(ZomboidForge.InfiniteHP)
         end
     end
 
@@ -193,16 +202,13 @@ ZomboidForge.SetZombieData = function(zombie,ZType)
     if animVariable then
         if not zombie:getVariableBoolean(animVariable) then
             zombie:setVariable(animVariable,'true')
-            if isClient() then
-                --sendClientCommand('ZombieHandler', 'SetAnimationVariable', {animationVariable = ZombieTable.animationVariable, zombie = zombie:getOnlineID()})
-            end
         end
     end
 
     -- run custom data if any
     if ZombieTable.customData then
-        for i = 1,#ZombieTable.customData do
-            ZomboidForge[ZombieTable.customData[i]](zombie,ZType)
+        for _, customData in ipairs(ZombieTable.customData) do
+            ZomboidForge[customData](zombie,ZType)
         end
     end
 end
@@ -223,9 +229,9 @@ end
 ---@param ZDataTable    table       --Zombie Table to randomize
 ---@param ZData         string      --Chosen data in ZType table
 ---@param current       any         --[opt] Used to verify `current` from `Zombie` is not in table
----@return any                      --Random choice within ZData
+---@return boolean                  --Random choice within ZData
 ZomboidForge.RandomizeTable = function(ZDataTable,ZData,current)
-    local ZDataTable_get = ZDataTable[ZData]; if not ZDataTable_get then return end
+    local ZDataTable_get = ZDataTable[ZData]; if not ZDataTable_get then return false end
     local size = #ZDataTable_get
 
     local check = false
@@ -445,8 +451,7 @@ ZomboidForge.GetZombieOnPlayerMouse = function(player)
 						if zombie and instanceof(zombie, "IsoZombie") and zombie:isAlive() then
                             -- get zombie data
                             local trueID = ZomboidForge.pID(zombie)
-                            local nonPersistentZData = ZomboidForge.GetNonPersistentZData(trueID)
-                            local ZType = nonPersistentZData.ZType
+                            local ZType = ZomboidForge.GetZType(trueID)
 
 							if ZomboidForge.ZTypes[ZType] and player:CanSee(zombie) then
 								ZomboidForge.ShowNametag[trueID] = {zombie,100}
@@ -471,10 +476,7 @@ ZomboidForge.UpdateNametag = function()
 		local interval = ZData[2]
 
         -- get zombie data
-        local nonPersistentZData = ZomboidForge.GetNonPersistentZData(trueID)
-
-        -- get zombie data
-        local ZType = nonPersistentZData.ZType
+        local ZType = ZomboidForge.GetZType(trueID)
         local ZombieTable = ZomboidForge.ZTypes[ZType]
 		if interval>0 and ZombieTable then
 			local player = getPlayer()

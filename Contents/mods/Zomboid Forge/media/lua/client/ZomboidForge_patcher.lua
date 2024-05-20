@@ -18,7 +18,6 @@ local table = table -- Lua's table module
 local ipairs = ipairs -- ipairs function
 local pairs = pairs -- pairs function
 local ZombRand = ZombRand -- java function
-local print = print -- print function
 local tostring = tostring --tostring function
 
 --- import module from ZomboidForge
