@@ -11,6 +11,14 @@ option ZomboidForge.Nametags
 	translation = ZomboidForge_nametags,
 }
 
+option ZomboidForge.SpawnWeightExplanation
+{
+	type = boolean,
+	default = false,
+	page = ZomboidForge,
+	translation = ZomboidForge_SpawnWeightExplanation,
+}
+
 option ZomboidForge.ZomboidSpawn
 {
 	type = boolean,
