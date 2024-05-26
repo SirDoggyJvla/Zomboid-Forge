@@ -59,11 +59,9 @@ ZomboidForge.Commands.ZombieHandler.SetZombieHP = function(args)
     local zombie = ZomboidForge.getZombieByOnlineID(args.zombie)
     if zombie then
         if args.kill then
-            --zombie:Kill(getPlayerByOnlineID(args.attacker))
-
             zombie:setHealth(0)
             zombie:changeState(ZombieOnGroundState.instance())
-            zombie:setAttackedBy(getCell():getFakeZombieForHit())
+            zombie:setAttackedBy(getPlayerByOnlineID(args.attacker))
             zombie:becomeCorpse()
         else
             --zombie:setHealth(args.HP)

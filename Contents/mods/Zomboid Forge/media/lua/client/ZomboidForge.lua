@@ -261,8 +261,14 @@ ZomboidForge.OnHit = function(attacker, zombie, handWeapon, damage)
                 if HP <= 0 then
                     -- reset emitters
                     zombie:getEmitter():stopAll()
-                    zombie:Kill(attacker)
+
+                    -- for some reason doing `zombie:Kill(attacker)` doesn't make sure the zombie dies
                     zombie:setHealth(0)
+                    zombie:changeState(ZombieOnGroundState.instance())
+                    zombie:setAttackedBy(attacker)
+                    zombie:becomeCorpse()
+
+                    PersistentZData.HP = nil
                 else
                     -- Makes sure the Zombie doesn't get oneshoted by whatever bullshit weapon
                     -- someone might use.
