@@ -218,8 +218,11 @@ end
 ---@param zombie        IsoZombie
 ZomboidForge.OnHit = function(attacker, zombie, handWeapon, damage)
     if zombie:isZombie() and zombie:isAlive() then
-        local trueID = ZomboidForge.pID(zombie)
+        -- show nametag
+        ZomboidForge.ShowZombieName(attacker, zombie)
 
+        -- get zombie data
+        local trueID = ZomboidForge.pID(zombie)
         local ZType = ZomboidForge.GetZType(trueID)
         local ZombieTable = ZomboidForge.ZTypes[ZType]
 
@@ -228,7 +231,6 @@ ZomboidForge.OnHit = function(attacker, zombie, handWeapon, damage)
                 ZomboidForge[ZombieTable.zombieOnHit[i]](attacker, zombie, handWeapon, damage)
             end
         end
-        ZomboidForge.ShowZombieName(attacker, zombie)
 
         -- skip if no HP stat or HP is 1
         local HP = ZombieTable.HP
@@ -270,7 +272,14 @@ ZomboidForge.OnHit = function(attacker, zombie, handWeapon, damage)
                 end
             end
         end
-
+        
+        -- ATRO patch
+        -- display damage done to zombie from bullet
+        if getActivatedMods():contains("Advanced_Trajectorys_Realistic_Overhaul") then
+            if getSandboxOptions():getOptionByName("ATY_damagedisplay"):getValue() then
+                displayDamageOnZom(damagezb, Zombie)
+            end
+        end
     end
 end
 
