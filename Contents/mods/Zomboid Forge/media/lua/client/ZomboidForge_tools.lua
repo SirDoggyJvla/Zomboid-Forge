@@ -209,6 +209,10 @@ ZomboidForge.SetZombieData = function(zombie,ZType)
         end
     end
 
+    -- set only Jaw Stabs
+    local jaw_stab = ZombieTable.onlyJawStab or false
+    zombie:setOnlyJawStab(jaw_stab)
+
     -- run custom data if any
     if ZombieTable.customData then
         for _, customData in ipairs(ZombieTable.customData) do

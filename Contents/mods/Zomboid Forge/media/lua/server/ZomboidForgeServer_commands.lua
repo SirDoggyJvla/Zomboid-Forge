@@ -69,7 +69,7 @@ ZomboidForge_server.Commands.ZombieHandler.DamageZombie = function(player,args)
 		kill = kill,
 		shouldNotStagger = args.shouldNotStagger,
 	}
-	sendServerCommand('ZombieHandler', 'SetZombieHP', args)
+	sendServerCommand('ZombieHandler', 'DamageZombie', args)
 
 	-- delete persistent data about this zombie if it gets killed
 	-- else update HP counter

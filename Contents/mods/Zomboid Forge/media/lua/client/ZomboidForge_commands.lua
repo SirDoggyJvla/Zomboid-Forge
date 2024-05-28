@@ -54,7 +54,7 @@ ZomboidForge.Commands.ZombieHandler.SetAnimationVariable = function(args)
 end
 
 -- Kill zombie if told to do so. Else just set the HP to the given value
-ZomboidForge.Commands.ZombieHandler.SetZombieHP = function(args)
+ZomboidForge.Commands.ZombieHandler.DamageZombie = function(args)
     -- get zombie info
     local zombie = ZomboidForge.getZombieByOnlineID(args.zombie)
     if zombie then
@@ -64,9 +64,6 @@ ZomboidForge.Commands.ZombieHandler.SetZombieHP = function(args)
             zombie:setAttackedBy(getPlayerByOnlineID(args.attacker))
             zombie:becomeCorpse()
         else
-            --zombie:setHealth(args.HP)
-            --zombie:setAttackedBy(getCell():getFakeZombieForHit())
-
             if not zombie:avoidDamage() then
                 zombie:setAvoidDamage(true)
             end

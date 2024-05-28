@@ -203,7 +203,7 @@ ZomboidForge.ZombieAgro = function(zombie,ZType)
         end
         if ZombieTable.zombieAgro then
             for i=1,#ZombieTable.zombieAgro do
-                ZomboidForge[ZombieTable.zombieAgro[i]](target,zombie,ZType)
+                ZomboidForge[ZombieTable.zombieAgro[i]](ZType,target,zombie)
             end
         end
     end
@@ -226,64 +226,82 @@ ZomboidForge.OnHit = function(attacker, zombie, handWeapon, damage)
         local ZType = ZomboidForge.GetZType(trueID)
         local ZombieTable = ZomboidForge.ZTypes[ZType]
 
-        if ZombieTable and ZombieTable.zombieOnHit then
+        -- resetHitTime
+        if ZombieTable.resetHitTime then
+            zombie:setHitTime(0)
+        end
+
+        -- shouldAvoidDamage
+        local shouldAvoidDamage = ZombieTable.shouldAvoidDamage or false
+        if zombie:avoidDamage() ~= shouldAvoidDamage then
+            zombie:setAvoidDamage(shouldAvoidDamage)
+        end
+
+        -- custom on hit functions
+        if ZombieTable.zombieOnHit then
             for i=1,#ZombieTable.zombieOnHit do
-                ZomboidForge[ZombieTable.zombieOnHit[i]](attacker, zombie, handWeapon, damage)
+                ZomboidForge[ZombieTable.zombieOnHit[i]](ZType,attacker, zombie, handWeapon, damage)
             end
         end
 
-        -- skip if no HP stat or HP is 1
-        local HP = ZombieTable.HP
-        if HP and HP ~= 1 and handWeapon:getFullType() ~= "Base.BareHands" then
-            -- use custom damage function if exists
-            if ZombieTable.customDamage then
-                damage = ZomboidForge[ZombieTable.customDamage](attacker, zombie, handWeapon, damage)
-            end
+        if attacker == getPlayer() then
+            -- skip if no HP stat or HP is 1
+            local HP = ZombieTable.HP
+            if HP and HP ~= 1 then
+                -- use custom damage function if exists
+                if ZombieTable.customDamage then
+                    damage = ZomboidForge[ZombieTable.customDamage](ZType,attacker, zombie, handWeapon, damage)
+                end
 
-            -- set zombie health or kill zombie
-            if isClient() then
-                local args = {
-                    damage = damage,
-                    trueID = trueID,
-                    zombie = zombie:getOnlineID(),
-                    defaultHP = HP,
-                    shouldNotStagger = ZombieTable.shouldNotStagger,
-                }
+                -- set zombie health or kill zombie
+                if isClient() then
+                    local args = {
+                        damage = damage,
+                        trueID = trueID,
+                        zombie = zombie:getOnlineID(),
+                        defaultHP = HP,
+                        shouldNotStagger = ZombieTable.shouldNotStagger,
+                    }
 
-                sendClientCommand('ZombieHandler', 'DamageZombie', args)
-            else
-                -- get zombie persistent data
-                local PersistentZData = ZomboidForge.GetPersistentZData(trueID)
+                    if handWeapon:getFullType() == "Base.BareHands" then
+                        args.damage = 0
+                    end
 
-                HP = PersistentZData.HP or HP
-                HP = HP - damage
-
-                if HP <= 0 then
-                    -- reset emitters
-                    zombie:getEmitter():stopAll()
-
-                    -- for some reason doing `zombie:Kill(attacker)` doesn't make sure the zombie dies
-                    zombie:setHealth(0)
-                    zombie:changeState(ZombieOnGroundState.instance())
-                    zombie:setAttackedBy(attacker)
-                    zombie:becomeCorpse()
-
-                    PersistentZData.HP = nil
+                    sendClientCommand('ZombieHandler', 'DamageZombie', args)
                 else
-                    -- Makes sure the Zombie doesn't get oneshoted by whatever bullshit weapon
-                    -- someone might use.
-                    -- Updates the HP counter of PersistentZData
-                    zombie:setHealth(ZomboidForge.InfiniteHP)
-                    PersistentZData.HP = HP
+                    -- get zombie persistent data
+                    local PersistentZData = ZomboidForge.GetPersistentZData(trueID)
+
+                    HP = PersistentZData.HP or HP
+                    HP = HP - damage
+
+                    if HP <= 0 then
+                        -- reset emitters
+                        zombie:getEmitter():stopAll()
+
+                        -- for some reason doing `zombie:Kill(attacker)` doesn't make sure the zombie dies
+                        zombie:setHealth(0)
+                        zombie:changeState(ZombieOnGroundState.instance())
+                        zombie:setAttackedBy(attacker)
+                        zombie:becomeCorpse()
+
+                        PersistentZData.HP = nil
+                    else
+                        -- Makes sure the Zombie doesn't get oneshoted by whatever bullshit weapon
+                        -- someone might use.
+                        -- Updates the HP counter of PersistentZData
+                        zombie:setHealth(ZomboidForge.InfiniteHP)
+                        PersistentZData.HP = HP
+                    end
                 end
             end
-        end
-        
-        -- ATRO patch
-        -- display damage done to zombie from bullet
-        if getActivatedMods():contains("Advanced_Trajectorys_Realistic_Overhaul") then
-            if getSandboxOptions():getOptionByName("ATY_damagedisplay"):getValue() then
-                displayDamageOnZom(damagezb, Zombie)
+
+            -- ATRO patch
+            -- display damage done to zombie from bullet
+            if getActivatedMods():contains("Advanced_Trajectorys_Realistic_Overhaul") then
+                if getSandboxOptions():getOptionByName("ATY_damagedisplay"):getValue() then
+                    displayDamageOnZom(damage, zombie) -- ATRO global function
+                end
             end
         end
     end
