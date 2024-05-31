@@ -37,11 +37,11 @@ Sandbox_EN = {
 	Sandbox_ZF_MemoryEnum_option2 = "Normal",
 	Sandbox_ZF_MemoryEnum_option3 = "Short",
 
-	Sandbox_ZF_EyesightEnum_option1 = "Pinpoint",
+	Sandbox_ZF_EyesightEnum_option1 = "Eagle",
 	Sandbox_ZF_EyesightEnum_option2 = "Normal",
 	Sandbox_ZF_EyesightEnum_option3 = "Poor",
 
-	Sandbox_ZF_HearingEnum_option1 = "Eagle",
+	Sandbox_ZF_HearingEnum_option1 = "Pinpoint",
 	Sandbox_ZF_HearingEnum_option2 = "Normal",
 	Sandbox_ZF_HearingEnum_option3 = "Poor",
 

@@ -124,7 +124,7 @@ ZomboidForge.ZombieInitiliaze = function(zombie,fullResetZ,rollZType)
     end
 end
 
--- Handles everything about the Zombies.
+-- Handles the custom behaviors of the Zombies and triggers attack behavior.
 -- Steps of Zombie update:
 --
 --      `Initialize zombie type if needed`
@@ -268,7 +268,7 @@ ZomboidForge.OnHit = function(attacker, zombie, handWeapon, damage)
                     end
 
                     sendClientCommand('ZombieHandler', 'DamageZombie', args)
-                else
+                elseif handWeapon:getFullType() ~= "Base.BareHands" then
                     -- get zombie persistent data
                     local PersistentZData = ZomboidForge.GetPersistentZData(trueID)
 

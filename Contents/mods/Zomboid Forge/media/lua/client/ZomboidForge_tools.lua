@@ -149,7 +149,6 @@ ZomboidForge.SetZombieData = function(zombie,ZType)
         end
         if hairChoice then
             zombieVisual:setHairModel(hairChoice)
-            zombie:resetModel()
         end
     end
 
@@ -160,7 +159,6 @@ ZomboidForge.SetZombieData = function(zombie,ZType)
         local hairColorChoice = ZomboidForge.RandomizeTable(ZombieTable,"hairColor",currentHairColor)
         if hairColorChoice then
             zombieVisual:setHairColor(hairColorChoice)
-            zombie:resetModel()
         end
     end
 
@@ -171,7 +169,6 @@ ZomboidForge.SetZombieData = function(zombie,ZType)
         local beardChoice = ZomboidForge.RandomizeTable(ZombieTable,"beard",currentBeard)
         if beardChoice then
             zombieVisual:setBeardModel(beardChoice)
-            zombie:resetModel()
         end
     end
 
@@ -182,7 +179,6 @@ ZomboidForge.SetZombieData = function(zombie,ZType)
         local beardColorChoice = ZomboidForge.RandomizeTable(ZombieTable,"beardColor",currentBeardColor)
         if beardColorChoice or true then
             zombieVisual:setHairColor(beardColorChoice)
-            zombie:resetModel()
         end
     end
 
@@ -213,12 +209,59 @@ ZomboidForge.SetZombieData = function(zombie,ZType)
     local jaw_stab = ZombieTable.onlyJawStab or false
     zombie:setOnlyJawStab(jaw_stab)
 
+    -- set custom emitters if any
+    local customEmitter = ZombieTable.customEmitter
+    if customEmitter then
+        -- retreive emitter
+        local emitter = customEmitter.general
+            or zombie:isFemale() and customEmitter.female
+            or customEmitter.male
+
+        if emitter then
+            local zombieEmitter = zombie:getEmitter()
+            if not zombieEmitter:isPlaying(emitter) then
+                zombieEmitter:playVocals(emitter)
+            end
+        end
+    end
+
+    -- remove bandages
+    if ZombieTable.removeBandages then
+        -- Remove bandages
+        local bodyVisuals = zombie:getHumanVisual():getBodyVisuals()
+        if bodyVisuals and bodyVisuals:size() > 0 then
+            zombie:getHumanVisual():getBodyVisuals():clear()
+        end
+    end
+
+    -- zombie clothing visuals
+    local clothingVisuals = ZombieTable.clothingVisuals
+    if clothingVisuals then
+        -- get visuals and skip of none
+        local visuals = zombie:getItemVisuals()
+        if visuals then
+            -- remove new visuals
+            local locations = clothingVisuals.remove
+            if locations then
+                ZomboidForge.RemoveClothingVisuals(visuals,locations)
+            end
+
+            -- set new visuals
+            locations = clothingVisuals.set
+            if locations then
+                ZomboidForge.AddClothingVisuals(visuals,locations)
+            end
+        end
+    end
+
     -- run custom data if any
     if ZombieTable.customData then
         for _, customData in ipairs(ZombieTable.customData) do
             ZomboidForge[customData](zombie,ZType)
         end
     end
+
+    zombie:resetModel()
 end
 
 -- Test that a value is present within an array-like table.
@@ -303,6 +346,56 @@ ZomboidForge.UpdateZombieStats = function(zombie,ZType)
     end
     zombie:makeInactive(true)
     zombie:makeInactive(false)
+end
+
+
+-- This function will remove clothing visuals from the `zombie` for each clothing `locations`.
+---@param visuals       ItemVisuals
+---@param locations     table      --Zombie Type ID
+ZomboidForge.RemoveClothingVisuals = function(visuals,locations)
+    -- cycle backward to not have any fuck up in index whenever one is removed
+    for i = visuals:size() - 1, 0, -1 do
+        local item = visuals:get(i)
+        local getRemove = locations[item:getScriptItem():getBodyLocation()]
+        if getRemove and not getRemove == item then
+            visuals:remove(i)
+        end
+    end
+end
+
+-- This function will replace or add clothing visuals from the `zombie` for each 
+-- clothing `locations` specified. 
+--
+--      `1: checks for bodyLocations that fit locations`
+--      `2: replaces bodyLocation item if not already the proper item`
+--      `3: add visuals that need to get added`
+---@param visuals       ItemVisuals
+---@param locations     table      --Zombie Type ID
+ZomboidForge.AddClothingVisuals = function(visuals,locations)
+    -- replace visuals that are at the same body locations and check for already set visuals
+    local replace = {}
+    for i = visuals:size() - 1, 0, -1 do
+        local item = visuals:get(i)
+        local location = item:getScriptItem():getBodyLocation()
+        local getReplacement = locations[location]
+        if getReplacement then
+            if getReplacement ~= item then
+                item:setItemType(getReplacement)
+			    item:setClothingItemName(getReplacement)
+            end
+            replace[location] = item
+        end
+    end
+
+    -- check for visuals that need to be added and add them
+    for location,item in pairs(locations) do
+        if not replace[location] then
+            local itemVisual = ItemVisual.new()
+            itemVisual:setItemType(item)
+            itemVisual:setClothingItemName(item)
+            visuals:add(itemVisual)
+        end
+    end
 end
 
 --#region Tools
