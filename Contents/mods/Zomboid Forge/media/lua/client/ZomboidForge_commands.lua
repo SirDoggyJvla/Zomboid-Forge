@@ -53,23 +53,40 @@ ZomboidForge.Commands.ZombieHandler.SetAnimationVariable = function(args)
     end
 end
 
+local killXP
 -- Kill zombie if told to do so. Else just set the HP to the given value
 ZomboidForge.Commands.ZombieHandler.DamageZombie = function(args)
     -- get zombie info
     local zombie = ZomboidForge.getZombieByOnlineID(args.zombie)
     if zombie then
         if args.kill then
+            zombie:addLineChatElement("kill")
+            local player = getPlayerByOnlineID(args.attacker)
             zombie:setHealth(0)
             zombie:changeState(ZombieOnGroundState.instance())
-            zombie:setAttackedBy(getPlayerByOnlineID(args.attacker))
+            zombie:setAttackedBy(player)
             zombie:becomeCorpse()
+
+            zombie:setHitReaction("EndDeath")
+            --[[
+            if getActivatedMods():contains("Advanced_Trajectorys_Realistic_Overhaul") and player == getPlayer() then
+                player:setZombieKills(player:getZombieKills()+1)
+
+                if not Advanced_trajectory.hasFlameWeapon then
+                    killXP = killXP or getSandboxOptions():getOptionByName("Advanced_trajectory.XPKillModifier"):getValue()
+                    -- multiplier to 0.67
+                    triggerEvent("OnWeaponHitXp",player, player:getPrimaryHandItem(), zombie, args.damage) -- OnWeaponHitXp From "KillCount",used(wielder,weapon,victim,damage)
+                    Events.OnWeaponHitXp.Add(player:getXp():AddXP(Perks.Aiming, killXP));
+                end
+            end]]
         else
+            zombie:addLineChatElement("survive")
             if not zombie:avoidDamage() then
                 zombie:setAvoidDamage(true)
             end
 
             if not args.shouldNotStagger then
-                zombie:setStaggerBack(true)
+                zombie:setHitReaction("HitReaction")
             end
         end
     end

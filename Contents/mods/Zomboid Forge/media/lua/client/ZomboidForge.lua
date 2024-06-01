@@ -144,6 +144,8 @@ ZomboidForge.ZombieUpdate = function(zombie)
         end
     end
 
+    zombie:addLineChatElement(tostring(zombie:avoidDamage()))
+
     -- run zombie attack functions
     if zombie:isAttacking() then
         ZomboidForge.ZombieAgro(zombie,ZType)
@@ -233,7 +235,7 @@ ZomboidForge.OnHit = function(attacker, zombie, handWeapon, damage)
 
         -- shouldAvoidDamage
         local shouldAvoidDamage = ZombieTable.shouldAvoidDamage or false
-        if zombie:avoidDamage() ~= shouldAvoidDamage then
+        if zombie:avoidDamage() ~= shouldAvoidDamage and (ZombieTable.HP and ZombieTable.HP == 1 or not ZombieTable.HP) then
             zombie:setAvoidDamage(shouldAvoidDamage)
         end
 
@@ -263,6 +265,8 @@ ZomboidForge.OnHit = function(attacker, zombie, handWeapon, damage)
                         shouldNotStagger = ZombieTable.shouldNotStagger,
                     }
 
+                    zombie:setAvoidDamage(true)
+
                     if handWeapon:getFullType() == "Base.BareHands" then
                         args.damage = 0
                     end
@@ -286,6 +290,18 @@ ZomboidForge.OnHit = function(attacker, zombie, handWeapon, damage)
                         zombie:becomeCorpse()
 
                         PersistentZData.HP = nil
+                        
+                        --[[ god this shit is awful, fuck you with your mod ATRO
+                        if getActivatedMods():contains("Advanced_Trajectorys_Realistic_Overhaul") then
+                            local player = getPlayer()
+                            player:setZombieKills(player:getZombieKills()+1)
+                            if not Advanced_trajectory.hasFlameWeapon then
+                                killXP = killXP or getSandboxOptions():getOptionByName("Advanced_trajectory.XPKillModifier"):getValue()
+                                -- multiplier to 0.67
+                                triggerEvent("OnWeaponHitXp",player, player:getPrimaryHandItem(), zombie, args.damage) -- OnWeaponHitXp From "KillCount",used(wielder,weapon,victim,damage)
+                                Events.OnWeaponHitXp.Add(player:getXp():AddXP(Perks.Aiming, killXP));
+                            end
+                        end]]
                     else
                         -- Makes sure the Zombie doesn't get oneshoted by whatever bullshit weapon
                         -- someone might use.

@@ -186,15 +186,11 @@ ZomboidForge.SetZombieData = function(zombie,ZType)
     -- HP, handled via the attack functions
     if ZombieTable.HP and ZombieTable.HP ~= 1 then
         if isClient() then
-            if not zombie:avoidDamage() then
-                zombie:setAvoidDamage(true)
-            end
+            zombie:setAvoidDamage(true)
         elseif zombie:getHealth() ~= ZomboidForge.InfiniteHP then
             ZomboidForge.InfiniteHP = 300
             zombie:setHealth(ZomboidForge.InfiniteHP)
         end
-    elseif isClient() then
-        zombie:setAvoidDamage(false)
     end
 
     -- custom animation variable

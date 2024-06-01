@@ -425,18 +425,10 @@ function Advanced_trajectory.checkontick()
                         Zombie:addBlood(getSandboxOptions():getOptionByName("AT_Blood"):getValue())
 
                         -- if zombie's health is very low, just kill it (recall full health is over 140) and give xp like usual
-                        if Zombie:getHealth() <= 0.1 then                           
+                        if Zombie:getHealth() <= 0.1 then
                             -- if zombie's health is very low, just kill it (recall full health is over 140) and give xp like usual                         
                             if vt[19] then
-                                if isClient() then
-                                    sendClientCommand("ATY_killzombie","true",{Zombie:getOnlineID()})
-                                end
-
-                                -- sets zombie hp to 0, zombie death animation is played and then zombie turns into corpse object (no longer zombie)
-                                Zombie:Kill(vt[19])
-
                                 vt[19]:setZombieKills(vt[19]:getZombieKills()+1)
-                                vt[19]:setLastHitCount(1)
 
                                 if not Advanced_trajectory.hasFlameWeapon then
                                     local killXP = getSandboxOptions():getOptionByName("Advanced_trajectory.XPKillModifier"):getValue()
