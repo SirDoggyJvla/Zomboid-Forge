@@ -22,7 +22,7 @@ option ZomboidForge.SpawnWeightExplanation
 option ZomboidForge.ZomboidSpawn
 {
 	type = boolean,
-	default = false,
+	default = true,
 	page = ZomboidForge,
 	translation = ZomboidForge_zomboidSpawn,
 }
