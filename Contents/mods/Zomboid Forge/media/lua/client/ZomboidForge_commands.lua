@@ -60,7 +60,6 @@ ZomboidForge.Commands.ZombieHandler.DamageZombie = function(args)
     local zombie = ZomboidForge.getZombieByOnlineID(args.zombie)
     if zombie then
         if args.kill then
-            zombie:addLineChatElement("kill")
             local player = getPlayerByOnlineID(args.attacker)
             zombie:setHealth(0)
             zombie:changeState(ZombieOnGroundState.instance())
@@ -80,7 +79,6 @@ ZomboidForge.Commands.ZombieHandler.DamageZombie = function(args)
                 end
             end]]
         else
-            zombie:addLineChatElement("survive")
             if not zombie:avoidDamage() then
                 zombie:setAvoidDamage(true)
             end

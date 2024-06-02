@@ -62,9 +62,7 @@ ZomboidForge_server.Commands.ZombieHandler.DamageZombie = function(player,args)
 
 	-- determine if zombie gets killed
 	local kill = HP <= 0
-	print("kill ? "..tostring(kill))
-	print("HP = "..tostring(HP))
-	print("damage = "..tostring(damage))
+
 	-- ask clients to handle the zombie HP/killing
 	args = {
 		attacker = player:getOnlineID(),

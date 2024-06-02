@@ -97,8 +97,6 @@ ZomboidForge.ZombieUpdate = function(zombie)
         end
     end
 
-    zombie:addLineChatElement(tostring(zombie:avoidDamage()))
-
     -- run zombie attack functions
     if zombie:isAttacking() then
         ZomboidForge.ZombieAgro(zombie,ZType)
