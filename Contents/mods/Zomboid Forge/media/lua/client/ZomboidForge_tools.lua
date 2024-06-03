@@ -405,8 +405,8 @@ ZomboidForge.RemoveClothingVisuals = function(visuals,locations)
     for i = visuals:size() - 1, 0, -1 do
         local item = visuals:get(i)
         local getRemove = locations[item:getScriptItem():getBodyLocation()]
-        if getRemove and not getRemove == item then
-            visuals:remove(i)
+        if getRemove and getRemove ~= item then
+            visuals:remove(item)
         end
     end
 end

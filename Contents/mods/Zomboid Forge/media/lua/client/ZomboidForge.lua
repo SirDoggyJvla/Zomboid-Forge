@@ -97,6 +97,30 @@ ZomboidForge.ZombieUpdate = function(zombie)
         end
     end
 
+    if ZombieTable.onThump then
+        -- run code if zombie has thumping target
+        local thumped = zombie:getThumpTarget()
+        if not thumped then return end
+
+        local PersistentZData = ZomboidForge.GetPersistentZData(trueID)
+
+        -- check for thump
+        -- update thumped only if zombie is thumping
+        -- getThumpTarget outputs the target as long as the zombie is in thumping animation
+        -- but we want to make sure we run onThump only if a hit is sent
+        local timeThumping = zombie:getTimeThumping()
+        if PersistentZData.thumpCheck == timeThumping then
+            return
+        elseif timeThumping == 0 then
+            return
+        end
+        PersistentZData.thumpCheck = timeThumping
+
+        for i = 1,#ZombieTable.onThump do
+            ZomboidForge[ZombieTable.onThump[i]](zombie,ZType,thumped)
+        end
+    end
+
     -- run zombie attack functions
     if zombie:isAttacking() then
         ZomboidForge.ZombieAgro(zombie,ZType)
@@ -215,6 +239,10 @@ ZomboidForge.OnHit = function(attacker, zombie, handWeapon, damage)
                         defaultHP = HP,
                         shouldNotStagger = ZombieTable.shouldNotStagger,
                     }
+
+                    if not args.shouldNotStagger then
+                        zombie:setHitReaction("HitReaction")
+                    end
 
                     zombie:setAvoidDamage(true)
 
