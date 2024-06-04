@@ -222,6 +222,7 @@ ZomboidForge.SetZombieData = function(zombie,ZType)
         if emitter then
             local zombieEmitter = zombie:getEmitter()
             if not zombieEmitter:isPlaying(emitter) then
+                zombieEmitter:stopAll()
                 zombieEmitter:playVocals(emitter)
             end
         end
