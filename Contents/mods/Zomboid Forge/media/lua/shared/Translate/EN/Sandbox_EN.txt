@@ -9,7 +9,7 @@ Sandbox_EN = {
 	Sandbox_ZomboidForge_nametags_tooltip = "Toggling this ON will allow players to have the nametags of the various zombies. If toggled OFF, no one can see the nametags. Each players can also chose to disable the nametags for themselves by using Mod Options. <BR> <IMAGECENTRE:media/ui/nametag_example.png> <LINE>",
 
 	Sandbox_ZomboidForge_SpawnWeightExplanation = "Explanation of spawn weights",
-	Sandbox_ZomboidForge_SpawnWeightExplanation_tooltip = "[This option doesn't do anything] <BR> Zomboid Forge doesn't modify the spawns of the zombies but instead attributed spawn weights for each zombie types (ZType) allows the mod to distribute zombie types. <BR> The chance for a ZType to be chosen is: <LINE> <IMAGECENTRE:media/ui/formula.png,100,36> <LINE> What this means is that increase the ZType weight will overall increase the chance for the ZType to spawn but other ZTypes will have less chance of spawning.",
+	Sandbox_ZomboidForge_SpawnWeightExplanation_tooltip = "[This option doesn't do anything] <BR> Zomboid Forge doesn't modify the spawns of the zombies but instead attributed spawn weights for each zombie types (ZType) allows the mod to distribute zombie types. <BR> The chance for a ZType to be chosen is: <LINE> <IMAGECENTRE:media/ui/formula.png,100,36> <LINE> What this means is that increase the ZType weight will overall increase the chance for the ZType to spawn but other ZTypes will have less chance of spawning. <BR> DEACTIVATING A ZOMBIE TYPE WILL HAVE ITS WEIGHT NOT COUNTED IN THE TOTAL WEIGHT.",
 
 	/* Enum options */
 	Sandbox_ZF_WalktypeEnum_option1 = "Sprinters",

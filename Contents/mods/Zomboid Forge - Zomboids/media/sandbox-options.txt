@@ -3,22 +3,6 @@ VERSION = 1,
 /*---------------------------------------------------------------------
 -- Base sandbox options
 ---------------------------------------------------------------------*/
-option ZomboidForge.Nametags
-{
-	type = boolean,
-	default = true,
-	page = ZomboidForge,
-	translation = ZomboidForge_nametags,
-}
-
-option ZomboidForge.SpawnWeightExplanation
-{
-	type = boolean,
-	default = false,
-	page = ZomboidForge,
-	translation = ZomboidForge_SpawnWeightExplanation,
-}
-
 option ZomboidForge.ZomboidSpawn
 {
 	type = boolean,
@@ -36,7 +20,6 @@ option ZomboidForge.ZomboidChance
 	page = ZomboidForge,
 	translation = ZomboidForge_zomboidChance,
 }
-
 
 
 /*---------------------------------------------------------------------
