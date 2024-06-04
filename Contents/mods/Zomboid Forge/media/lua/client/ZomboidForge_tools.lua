@@ -18,65 +18,19 @@ local pairs = pairs -- pairs function
 local ZombRand = ZombRand -- java function
 local tostring = tostring --tostring function
 local Long = Long --Long for pID
+local player = getPlayer()
 
 --- import module from ZomboidForge
 local ZomboidForge = require "ZomboidForge_module"
 local ZFModData = ModData.getOrCreate("ZomboidForge")
 
-ZomboidForge.initModData_ZomboidForge_tools = function()
-    ZFModData = ModData.getOrCreate("ZomboidForge")
+-- Initialize player
+ZomboidForge.OnCreatePlayerInitializations.ZomboidForge_tools = function()
+    player = getPlayer()
 end
 
--- Modders can overwrite this to stop Zomboids from being ever activated by other players
-ZomboidForge.AddZomboids = function()
-    ZomboidForge.ZTypes.ZF_Zomboid = {
-        -- base informations
-        name = "IGUI_ZF_Zomboid",
-        chance = SandboxVars.ZomboidForge.ZomboidChance,
-        --outfit = {},
-        --reanimatedPlayer = false,
-        --skeleton = false,
-        -- hair = {
-        -- 	male = {
-        -- 		"",
-        -- 	},
-        -- 	female = {
-        -- 		"",
-        -- 	},
-        -- },
-        -- hairColor = {
-        -- 	ImmutableColor.new(Color.new(0.70, 0.70, 0.70, 1)),
-        -- },
-        -- beard = {
-        -- 	"",
-        -- },
-        --animationVariable = nil,
-
-        -- stats
-        walktype = SandboxVars.ZomboidForge.ZomboidWalktype,
-        strength = SandboxVars.ZomboidForge.ZomboidStrength,
-        toughness = SandboxVars.ZomboidForge.ZomboidToughness,
-        cognition = SandboxVars.ZomboidForge.ZomboidCognition,
-        memory = SandboxVars.ZomboidForge.ZomboidMemory,
-        sight = SandboxVars.ZomboidForge.ZomboidVision,
-        hearing = SandboxVars.ZomboidForge.ZomboidHearing,
-
-        --noteeth = false,
-
-        -- UI
-        color = {255, 255, 255,},
-        outline = {0, 0, 0,},
-
-        -- attack functions
-        -- zombieAgro = {},
-        -- zombieOnHit = {},
-
-        -- custom behavior
-        -- zombieDeath = {},
-        -- customBehavior = {},
-
-        -- customData = {},
-    }
+ZomboidForge.initModData_ZomboidForge_tools = function()
+    ZFModData = ModData.getOrCreate("ZomboidForge")
 end
 
 local A1, A2 = 727595, 798405  -- 5^17=D20*A1+A2
@@ -499,6 +453,210 @@ ZomboidForge.DeleteZombieData = function(trueID)
     end
 end
 
+--#region Determine Hit Reaction for zombies in multiplayer
+
+-- used to retrieve R and L shots
+local direction_side = {
+    [0] = "ShotChest",
+    [1] = "ShotLeg",
+    [2] = "ShotShoulderStep",
+    [3] = "ShotChestStep",
+    [4] = "ShotShoulder",
+}
+-- Determine hit reaction for a zombie. This is used in multiplayer to trigger to correct stagger.
+--
+-- This is a complete recreation of `processHitDirection` from `IsoZombie.java` class.
+---@param attacker      IsoPlayer
+---@param zombie        IsoZombie
+---@param handWeapon    HandWeapon
+ZomboidForge.DetermineHitReaction = function(attacker, zombie, handWeapon)
+    local attackerHitReaction = attacker:getVariableString("ZombieHitReaction")
+
+    local hitReaction = ""
+    -- if gun/ranged
+    if attackerHitReaction == "Shot" then
+        -- Roll crit hit
+        attacker:setCriticalHit(ZombRand(100) < player:calculateCritChance(zombie))
+
+        -- default to ShotBelly and get hit direction
+        hitReaction = "ShotBelly";
+        local hitDirection = ZomboidForge.DetermineHitDirection(attacker, zombie, handWeapon)
+
+        -- if N then roll for variation
+        if (hitDirection == "N" and (zombie:isHitFromBehind() or ZombRand(2) == 1))
+            or (hitDirection == "S")
+        then
+            hitReaction = "ShotBellyStep"
+        end
+
+        -- if R or L get hit reaction
+        if hitDirection == "R" or hitDirection == "L" then
+            if zombie:isHitFromBehind() then
+                hitReaction = direction_side[ZombRand(3)]
+            else
+                hitReaction = direction_side[ZombRand(5)]
+            end
+
+            hitReaction = hitReaction..hitDirection
+        end
+
+        -- verify critical hit
+        if attacker:isCriticalHit() then
+            if hitDirection == "S" then
+                hitReaction = "ShotHeadFwd"
+            elseif (hitDirection == "N")
+                or ((hitDirection == "L" or hitDirection == "R") and ZombRand(4) == 0)
+            then
+                hitReaction = "ShotHeadBwd"
+            end
+        end
+
+        -- supposed to be the part that handles blood but that can wait
+
+        -- roll to have a variation in ShotHead reaction
+        if hitReaction == "ShotHeadFwd" and ZombRand(2) == 0 then
+            hitReaction = "ShotHeadFwd02"
+        end
+
+    --[[ used to add blood, will be done later if needed
+    else
+        local categories = handWeapon:getCategories()
+        -- if blunt
+        if categories:contains("Blunt") then
+            zombie:addLineChatElement("Blunt")
+        -- unarmed
+        elseif not categories:contains("Unarmed") then
+            zombie:addLineChatElement("Else")
+        else
+            zombie:addLineChatElement("Unarmed")
+        end
+        ]]
+    end
+
+    -- check for eating body
+    if zombie:getEatBodyTarget() then
+        if zombie:getVariableBoolean("onknees") then
+            hitReaction = "OnKnees"
+        else
+            hitReaction = "Eating"
+        end
+    end
+
+    --[[
+        need to find how to use equalsIgnoreCase in lua
+        the original function is not exposed
+
+    if ("Floor".equalsIgnoreCase(var3) && this.isCurrentState(ZombieGetUpState.instance()) && this.isFallOnFront()) {
+        var3 = "GettingUpFront";
+    }
+    ]]
+
+    return hitReaction
+end
+
+-- This part adapts a part of `processHitDirection` from `IsoZombie.java` class
+-- which determines the angle of the attack and makes the zombie react to it
+---@param attacker      IsoPlayer
+---@param zombie        IsoZombie
+---@param handWeapon    HandWeapon
+ZomboidForge.DetermineHitDirection = function(attacker, zombie, handWeapon)
+    -- This seems to determine the angle from which the zombie got shot
+    local playerAngle = attacker:getForwardDirection();
+    local p_x = playerAngle:getX()
+    local p_y = playerAngle:getY()
+
+    local zombieHitAngle = zombie:getHitAngle();
+    local z_x = zombieHitAngle:getX()
+    local z_y = zombieHitAngle:getY()
+
+    local var6 = (p_x * z_x - p_y * z_y);
+
+    local var8 = -1
+    if var6 >= 0 then
+        var8 = 1
+    end
+
+    local var10 = (p_x * z_y + p_y * z_x);
+    local var12 = Math.acos(var10) * var8;
+
+    if var12 < 0 then
+        var12 = var12 + 6.283185307179586;
+    end
+    var12 = Math.toDegrees(var12)
+
+    -- Determine hitDirection based on angle
+    local hitDirection = ""
+
+    -- Check for south
+    if var12 < 45 then
+        zombie:setHitFromBehind(true)
+        hitDirection = "S"
+        if ZombRand(9) > 6 then
+            hitDirection = "L"
+        elseif ZombRand(9) > 4 then
+            hitDirection = "R"
+        end
+    elseif var12 < 90 then
+        zombie:setHitFromBehind(true)
+        if ZombRand(4) == 0 then
+            hitDirection = "S"
+        else
+            hitDirection = "R"
+        end
+    elseif var12 < 135 then
+        hitDirection = "R"
+    elseif var12 < 180 then
+        if ZombRand(4) == 0 then
+            hitDirection = "N"
+        else
+            hitDirection = "R"
+        end
+    elseif var12 < 225 then
+        hitDirection = "N"
+        if ZombRand(9) > 4 then
+            hitDirection = "R"
+        elseif ZombRand(9) > 6 then
+            hitDirection = "L"
+        end
+    elseif var12 < 270 then
+        if ZombRand(4) == 0 then
+            hitDirection = "N"
+        else
+            hitDirection = "L"
+        end
+    elseif var12 < 315 then
+        zombie:setHitFromBehind(true)
+        hitDirection = "L"
+    else
+        if ZombRand(4) == 0 then
+            hitDirection = "S"
+        else
+            hitDirection = "L"
+        end
+    end
+
+    return hitDirection
+end
+
+ZomboidForge.ApplyHitReaction = function(zombie,attacker,hitReaction)
+    -- check for hitReaction and apply it
+    -- else default to "" and simple stagger
+    if hitReaction and hitReaction ~= "" then
+        zombie:setHitReaction(hitReaction)
+    else
+        zombie:setStaggerBack(true)
+        zombie:setHitReaction("")
+
+        -- remove critical hit
+        if (zombie:getPlayerAttackPosition() == "LEFT" or zombie:getPlayerAttackPosition() == "RIGHT")    
+        then
+            attacker:setCriticalHit(false)
+        end
+    end
+end
+
+--#endregion
+
 -- Based on Chuck's work. Outputs the `trueID` of a `Zombie`.
 -- Thx to the help of Shurutsue, Albion and probably others.
 --
@@ -628,7 +786,6 @@ ZomboidForge.UpdateNametag = function()
         local ZType = ZomboidForge.GetZType(trueID)
         local ZombieTable = ZomboidForge.ZTypes[ZType]
 		if interval>0 and ZombieTable then
-			local player = getPlayer()
 			if zombie:isAlive() and player:CanSee(zombie) then
 				zombie:getModData().userName = zombie:getModData().userName or TextDrawObject.new()
 				zombie:getModData().userName:setDefaultColors(ZombieTable.color[1]/255,ZombieTable.color[2]/255,ZombieTable.color[3]/255,interval/100)

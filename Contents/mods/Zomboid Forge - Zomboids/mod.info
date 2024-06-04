@@ -1,0 +1,10 @@
+id=ZomboidForge_Zomboids
+name=Zomboid Forge [Zomboids]
+description=Allows players to use the base Zomboids. Addons utilizing Zomboid Forge can force activate this mod if they are supposed to use their custom zombies alongside the base one.
+poster=poster.png
+authors=SirDoggyJvla
+icon=icon.png
+tags=Build 41,Zomboid,Forge,Zombies,Framework
+url=https://ko-fi.com/sirdoggyjvla
+versionMin=41.0
+require=00AccessibleFields,ZomboidForge

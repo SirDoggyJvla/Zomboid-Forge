@@ -1,0 +1,16 @@
+Sandbox_EN = {
+	/* Zomboid spawn and weight */
+	Sandbox_ZomboidForge_zomboidSpawn = "Spawn Zomboids",
+	Sandbox_ZomboidForge_zomboidSpawn_tooltip = "Zomboids are defined as the base zombies in the game. You can modify their stats in the the Zomboid Forge [Zomboid Stats] sandbox options page.",
+	Sandbox_ZomboidForge_zomboidChance = "Zomboids spawn weight",
+
+	/* Zomboid Stats */
+	Sandbox_ZF_ZomboidWalktype = "Zomboid Speed",
+	Sandbox_ZF_ZomboidStrength = "Zomboid Strength",
+	Sandbox_ZF_ZomboidToughness = "Zomboid Toughness",
+	Sandbox_ZF_ZomboidCognition = "Zomboid Cognition",
+	Sandbox_ZF_ZomboidMemory = "Zomboid Memory",
+	Sandbox_ZF_ZomboidVision = "Zomboid Sight",
+	Sandbox_ZF_ZomboidHearing = "Zomboid Hearing",
+	Sandbox_ZF_ZomboidHP = "Zomboid health multiplier",
+}

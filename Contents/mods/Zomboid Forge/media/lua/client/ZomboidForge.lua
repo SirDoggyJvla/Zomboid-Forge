@@ -17,10 +17,20 @@ local ipairs = ipairs -- ipairs function
 local pairs = pairs -- pairs function
 local ZombRand = ZombRand -- java function
 local tostring = tostring --tostring function
+local player = getPlayer()
 
 --- import module from ZomboidForge
 local ZomboidForge = require "ZomboidForge_module"
 local ZFModData = ModData.getOrCreate("ZomboidForge")
+
+-- zombie list
+local zombieList
+
+-- Initialize player
+ZomboidForge.OnCreatePlayerInitializations.ZomboidForge = function()
+    player = getPlayer()
+    zombieList = player:getCell():getZombieList()
+end
 
 ZomboidForge.initModData_ZomboidForge = function()
     ZFModData = ModData.getOrCreate("ZomboidForge")
@@ -127,7 +137,6 @@ ZomboidForge.ZombieUpdate = function(zombie)
     end
 end
 
-local zombieList
 local zeroTick = 0
 local time_before_update = 10 -- seconds
 -- Handles the updating of the stats of every zombies as well as initializing them. zombieList is initialized
@@ -142,7 +151,7 @@ local time_before_update = 10 -- seconds
 ZomboidForge.OnTick = function(tick)
     -- initialize zombieList
     if not zombieList then
-        zombieList = getPlayer():getCell():getZombieList()
+        zombieList = player:getCell():getZombieList()
     end
 
     local zombieList_size = zombieList:size()
@@ -193,6 +202,8 @@ end
 -- Handles the custom HP of zombies and apply custom damage depending on the customDamage function.
 ---@param attacker      IsoPlayer
 ---@param zombie        IsoZombie
+---@param handWeapon    HandWeapon
+---@param damage        float
 ZomboidForge.OnHit = function(attacker, zombie, handWeapon, damage)
     if zombie:isZombie() and zombie:isAlive() then
         -- show nametag
@@ -221,7 +232,7 @@ ZomboidForge.OnHit = function(attacker, zombie, handWeapon, damage)
             end
         end
 
-        if attacker == getPlayer() then
+        if attacker == player then
             -- skip if no HP stat or HP is 1
             local HP = ZombieTable.HP
             if HP and HP ~= 1 then
@@ -240,8 +251,11 @@ ZomboidForge.OnHit = function(attacker, zombie, handWeapon, damage)
                         shouldNotStagger = ZombieTable.shouldNotStagger,
                     }
 
+                    local hitReaction = ZomboidForge.DetermineHitReaction(attacker, zombie, handWeapon)
+
                     if not args.shouldNotStagger then
-                        zombie:setHitReaction("HitReaction")
+                        ZomboidForge.ApplyHitReaction(zombie,attacker,hitReaction)
+                        args.hitReaction = hitReaction
                     end
 
                     zombie:setAvoidDamage(true)
@@ -272,7 +286,6 @@ ZomboidForge.OnHit = function(attacker, zombie, handWeapon, damage)
                         
                         --[[ god this shit is awful, fuck you with your mod ATRO
                         if getActivatedMods():contains("Advanced_Trajectorys_Realistic_Overhaul") then
-                            local player = getPlayer()
                             player:setZombieKills(player:getZombieKills()+1)
                             if not Advanced_trajectory.hasFlameWeapon then
                                 killXP = killXP or getSandboxOptions():getOptionByName("Advanced_trajectory.XPKillModifier"):getValue()

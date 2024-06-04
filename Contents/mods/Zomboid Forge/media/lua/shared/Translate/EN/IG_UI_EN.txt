@@ -1,7 +1,4 @@
 IGUI_EN = {
-	-- Zomboid nametag
-	IGUI_ZF_Zomboid = "Zomboid",
-
     -- mod options
 	IGUI_ZomboidForge_Zombie= "Zomboid Forge"
     IGUI_ZomboidForge_NameTag= "Show Zombie Type",

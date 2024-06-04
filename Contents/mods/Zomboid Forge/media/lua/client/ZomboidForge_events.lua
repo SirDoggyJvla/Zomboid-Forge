@@ -22,6 +22,15 @@ Events.OnGameStart.Add(ZomboidForge.OnGameStart)
 Events.OnInitGlobalModData.Add(ZomboidForge.initModData_ZomboidForge)
 Events.OnInitGlobalModData.Add(ZomboidForge.initModData_ZomboidForge_tools)
 
+-- initialize local player variables that need to be retreived later than lua files load
+Events.OnCreatePlayer.Add(
+    function()
+		for k,_ in pairs(ZomboidForge.OnCreatePlayerInitializations) do
+			ZomboidForge.OnCreatePlayerInitializations[k]()
+		end
+	end
+)
+
 --- Main Events handling
 Events.OnZombieUpdate.Add(ZomboidForge.ZombieUpdate)
 Events.OnWeaponHitCharacter.Add(ZomboidForge.OnHit)

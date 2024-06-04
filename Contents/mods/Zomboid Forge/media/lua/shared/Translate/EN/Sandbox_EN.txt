@@ -11,11 +11,6 @@ Sandbox_EN = {
 	Sandbox_ZomboidForge_SpawnWeightExplanation = "Explanation of spawn weights",
 	Sandbox_ZomboidForge_SpawnWeightExplanation_tooltip = "[This option doesn't do anything] <BR> Zomboid Forge doesn't modify the spawns of the zombies but instead attributed spawn weights for each zombie types (ZType) allows the mod to distribute zombie types. <BR> The chance for a ZType to be chosen is: <LINE> <IMAGECENTRE:media/ui/formula.png,100,36> <LINE> What this means is that increase the ZType weight will overall increase the chance for the ZType to spawn but other ZTypes will have less chance of spawning.",
 
-	Sandbox_ZomboidForge_zomboidSpawn = "Spawn Zomboids",
-	Sandbox_ZomboidForge_zomboidSpawn_tooltip = "Zomboids are defined as the base zombies in the game. You can modify their stats in the the Zomboid Forge [Zomboid Stats] sandbox options page.",
-	Sandbox_ZomboidForge_zomboidChance = "Zomboids spawn weight",
-
-
 	/* Enum options */
 	Sandbox_ZF_WalktypeEnum_option1 = "Sprinters",
 	Sandbox_ZF_WalktypeEnum_option2 = "Fast Shamblers",
@@ -44,15 +39,4 @@ Sandbox_EN = {
 	Sandbox_ZF_HearingEnum_option1 = "Pinpoint",
 	Sandbox_ZF_HearingEnum_option2 = "Normal",
 	Sandbox_ZF_HearingEnum_option3 = "Poor",
-
-
-	/* Zomboid Stats */
-	Sandbox_ZF_ZomboidWalktype = "Zomboid Speed",
-	Sandbox_ZF_ZomboidStrength = "Zomboid Strength",
-	Sandbox_ZF_ZomboidToughness = "Zomboid Toughness",
-	Sandbox_ZF_ZomboidCognition = "Zomboid Cognition",
-	Sandbox_ZF_ZomboidMemory = "Zomboid Memory",
-	Sandbox_ZF_ZomboidVision = "Zomboid Sight",
-	Sandbox_ZF_ZomboidHearing = "Zomboid Hearing",
-	Sandbox_ZF_ZomboidHP = "Zomboid health multiplier",
 }

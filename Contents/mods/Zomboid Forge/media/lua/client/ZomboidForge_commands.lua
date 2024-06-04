@@ -17,9 +17,15 @@ local ipairs = ipairs -- ipairs function
 local pairs = pairs -- pairs function
 local ZombRand = ZombRand -- java function
 local tostring = tostring --tostring function
+local player = getPlayer() --is initialized later, set here for in-game reloads
 
 --- import module from ZomboidForge
 local ZomboidForge = require "ZomboidForge_module"
+
+-- Initialize player
+ZomboidForge.OnCreatePlayerInitializations.ZomboidForge_commands = function()
+    player = getPlayer()
+end
 
 local zombieList
 ---@param onlineID          int
@@ -27,7 +33,7 @@ local zombieList
 ZomboidForge.getZombieByOnlineID = function(onlineID)
     -- initialize zombie list
     if not zombieList then
-        zombieList = getPlayer():getCell():getZombieList()
+        zombieList = player:getCell():getZombieList()
     end
 
     -- get zombie if in player's cell
@@ -44,7 +50,7 @@ end
 -- Sends a request to server to update every clients animationVariable for every clients.
 ---@param args          table
 ZomboidForge.Commands.ZombieHandler.SetAnimationVariable = function(args)
-    if getPlayer() ~= getPlayerByOnlineID(args.id) then
+    if player ~= getPlayerByOnlineID(args.id) then
         -- retrieve zombie
         local zombie = ZomboidForge.getZombieByOnlineID(args.zombie)
         if zombie then
@@ -59,16 +65,20 @@ ZomboidForge.Commands.ZombieHandler.DamageZombie = function(args)
     -- get zombie info
     local zombie = ZomboidForge.getZombieByOnlineID(args.zombie)
     if zombie then
+        -- retrieve attacker IsoPlayer
+        local attacker = getPlayerByOnlineID(args.attacker)
+
+        -- kill if need to kill
+        -- else stagger with proper HitReaction
         if args.kill then
-            local player = getPlayerByOnlineID(args.attacker)
             zombie:setHealth(0)
             zombie:changeState(ZombieOnGroundState.instance())
-            zombie:setAttackedBy(player)
+            zombie:setAttackedBy(attacker)
             zombie:becomeCorpse()
 
             zombie:setHitReaction("EndDeath")
             --[[
-            if getActivatedMods():contains("Advanced_Trajectorys_Realistic_Overhaul") and player == getPlayer() then
+            if getActivatedMods():contains("Advanced_Trajectorys_Realistic_Overhaul") and player == player then
                 player:setZombieKills(player:getZombieKills()+1)
 
                 if not Advanced_trajectory.hasFlameWeapon then
@@ -84,7 +94,7 @@ ZomboidForge.Commands.ZombieHandler.DamageZombie = function(args)
             end
 
             if not args.shouldNotStagger then
-                zombie:setHitReaction("HitReaction")
+                ZomboidForge.ApplyHitReaction(zombie,attacker,args.hitReaction)
             end
         end
     end
@@ -93,7 +103,7 @@ end
 -- Sends a request to server to update every clients animationVariable for every clients.
 ---@param args          table
 ZomboidForge.Commands.ZombieHandler.RemoveEmitters = function(args)
-    if getPlayer() == getPlayerByOnlineID(args.id) then return end
+    if player == getPlayerByOnlineID(args.id) then return end
     -- get zombie info
     local zombie = ZomboidForge.getZombieByOnlineID(args.zombie)
     if zombie then

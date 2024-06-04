@@ -14,6 +14,7 @@ This file defines the module of Zomboid Forge
 --- main module for use in storing informations and pass along other files
 local ZomboidForge = {
     -- basic dictionaries for storing data
+    OnCreatePlayerInitializations = {}, -- insert in this table functions that are used to initialize local variable player
     ZTypes =                    {},
     ShowNametag =               {},
     NonPersistentZData =        {},
