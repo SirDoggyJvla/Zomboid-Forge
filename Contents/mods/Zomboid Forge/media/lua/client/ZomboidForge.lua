@@ -248,7 +248,7 @@ ZomboidForge.OnHit = function(attacker, zombie, handWeapon, damage)
                         trueID = trueID,
                         zombie = zombie:getOnlineID(),
                         defaultHP = HP,
-                        shouldNotStagger = ZombieTable.shouldNotStagger,
+                        shouldNotStagger = ZombieTable.shouldNotStagger or zombie:isOnlyJawStab(),
                     }
 
                     local hitReaction = ZomboidForge.DetermineHitReaction(attacker, zombie, handWeapon)
