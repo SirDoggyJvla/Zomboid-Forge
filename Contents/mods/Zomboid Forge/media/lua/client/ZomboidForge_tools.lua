@@ -405,16 +405,28 @@ end
 
 -- Gives the persistent data of an `IsoZombie` based on its given `trueID`.
 ---@param trueID        int
----@return table
-ZomboidForge.GetPersistentZData = function(trueID)
+---@return table    
+ZomboidForge.GetPersistentZData = function(trueID,module)
+    -- initialize PersistentZData if needed
     if not ZFModData.PersistentZData then
         ZFModData.PersistentZData = {}
     end
+
+    -- initialize table if needed
     if not ZFModData.PersistentZData[trueID] then
         ZFModData.PersistentZData[trueID] = {}
     end
 
-    return ZFModData.PersistentZData[trueID]
+    -- if module asked by addons
+    -- return desired GetPersistentZData
+    if module then
+        if not ZFModData.PersistentZData[trueID][module] then
+            ZFModData.PersistentZData[trueID][module] = {}
+        end
+        return ZFModData.PersistentZData[trueID][module]
+    else
+        return ZFModData.PersistentZData[trueID]
+    end
 end
 
 -- Gives the non persistent data of an `IsoZombie` based on its given `trueID`.

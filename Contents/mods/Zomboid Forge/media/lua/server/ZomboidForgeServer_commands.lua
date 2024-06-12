@@ -64,14 +64,14 @@ ZomboidForge_server.Commands.ZombieHandler.DamageZombie = function(player,args)
 	local kill = HP <= 0
 
 	-- ask clients to handle the zombie HP/killing
-	args = {
+	local new_args = {
 		attacker = player:getOnlineID(),
 		zombie = args.zombie,
 		kill = kill,
 		shouldNotStagger = args.shouldNotStagger,
 		damage = damage, -- needed for ATRO compat
 	}
-	sendServerCommand('ZombieHandler', 'DamageZombie', args)
+	sendServerCommand('ZombieHandler', 'DamageZombie', new_args)
 
 	-- delete persistent data about this zombie if it gets killed
 	-- else update HP counter

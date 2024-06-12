@@ -59,7 +59,6 @@ ZomboidForge.Commands.ZombieHandler.SetAnimationVariable = function(args)
     end
 end
 
-local killXP
 -- Kill zombie if told to do so. Else just set the HP to the given value
 ZomboidForge.Commands.ZombieHandler.DamageZombie = function(args)
     -- get zombie info
@@ -71,23 +70,18 @@ ZomboidForge.Commands.ZombieHandler.DamageZombie = function(args)
         -- kill if need to kill
         -- else stagger with proper HitReaction
         if args.kill then
+            -- delete emitters
+            zombie:getEmitter():stopAll()
+
+            -- kill zombie
+            zombie:Kill(attacker)
             zombie:setHealth(0)
             zombie:changeState(ZombieOnGroundState.instance())
             zombie:setAttackedBy(attacker)
             zombie:becomeCorpse()
 
+            -- add the death animation
             zombie:setHitReaction("EndDeath")
-            --[[
-            if getActivatedMods():contains("Advanced_Trajectorys_Realistic_Overhaul") and player == player then
-                player:setZombieKills(player:getZombieKills()+1)
-
-                if not Advanced_trajectory.hasFlameWeapon then
-                    killXP = killXP or getSandboxOptions():getOptionByName("Advanced_trajectory.XPKillModifier"):getValue()
-                    -- multiplier to 0.67
-                    triggerEvent("OnWeaponHitXp",player, player:getPrimaryHandItem(), zombie, args.damage) -- OnWeaponHitXp From "KillCount",used(wielder,weapon,victim,damage)
-                    Events.OnWeaponHitXp.Add(player:getXp():AddXP(Perks.Aiming, killXP));
-                end
-            end]]
         else
             if not zombie:avoidDamage() then
                 zombie:setAvoidDamage(true)

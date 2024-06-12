@@ -110,24 +110,21 @@ ZomboidForge.ZombieUpdate = function(zombie)
     if ZombieTable.onThump then
         -- run code if zombie has thumping target
         local thumped = zombie:getThumpTarget()
-        if not thumped then return end
+        if thumped then
+            local PersistentZData = ZomboidForge.GetPersistentZData(trueID,nil)
 
-        local PersistentZData = ZomboidForge.GetPersistentZData(trueID)
+            -- check for thump
+            -- update thumped only if zombie is thumping
+            -- getThumpTarget outputs the target as long as the zombie is in thumping animation
+            -- but we want to make sure we run onThump only if a hit is sent
+            local timeThumping = zombie:getTimeThumping()
+            if PersistentZData.thumpCheck ~= timeThumping and timeThumping ~= 0 then
+                PersistentZData.thumpCheck = timeThumping
 
-        -- check for thump
-        -- update thumped only if zombie is thumping
-        -- getThumpTarget outputs the target as long as the zombie is in thumping animation
-        -- but we want to make sure we run onThump only if a hit is sent
-        local timeThumping = zombie:getTimeThumping()
-        if PersistentZData.thumpCheck == timeThumping then
-            return
-        elseif timeThumping == 0 then
-            return
-        end
-        PersistentZData.thumpCheck = timeThumping
-
-        for i = 1,#ZombieTable.onThump do
-            ZomboidForge[ZombieTable.onThump[i]](zombie,ZType,thumped)
+                for i = 1,#ZombieTable.onThump do
+                    ZomboidForge[ZombieTable.onThump[i]](zombie,ZType,thumped)
+                end
+            end
         end
     end
 
@@ -213,6 +210,7 @@ ZomboidForge.OnHit = function(attacker, zombie, handWeapon, damage)
         local trueID = ZomboidForge.pID(zombie)
         local ZType = ZomboidForge.GetZType(trueID)
         local ZombieTable = ZomboidForge.ZTypes[ZType]
+        local HP = ZombieTable.HP
 
         -- resetHitTime
         if ZombieTable.resetHitTime then
@@ -220,9 +218,10 @@ ZomboidForge.OnHit = function(attacker, zombie, handWeapon, damage)
         end
 
         -- shouldAvoidDamage
-        local shouldAvoidDamage = ZombieTable.shouldAvoidDamage or false
-        if zombie:avoidDamage() ~= shouldAvoidDamage and (ZombieTable.HP and ZombieTable.HP == 1 or not ZombieTable.HP) then
-            zombie:setAvoidDamage(shouldAvoidDamage)
+        local shouldAvoidDamage = ZombieTable.shouldAvoidDamage 
+        local setAvoidDamage = shouldAvoidDamage or isClient() and HP and HP ~= 1 and true
+        if zombie:avoidDamage() ~= setAvoidDamage then
+            zombie:setAvoidDamage(setAvoidDamage)
         end
 
         -- custom on hit functions
@@ -234,11 +233,15 @@ ZomboidForge.OnHit = function(attacker, zombie, handWeapon, damage)
 
         if attacker == player then
             -- skip if no HP stat or HP is 1
-            local HP = ZombieTable.HP
             if HP and HP ~= 1 then
                 -- use custom damage function if exists
                 if ZombieTable.customDamage then
                     damage = ZomboidForge[ZombieTable.customDamage](ZType,attacker, zombie, handWeapon, damage)
+                end
+
+                local handPush = false
+                if handWeapon:getFullType() == "Base.BareHands" and math.floor(damage) <= 0 then
+                    handPush = true
                 end
 
                 -- set zombie health or kill zombie
@@ -248,7 +251,7 @@ ZomboidForge.OnHit = function(attacker, zombie, handWeapon, damage)
                         trueID = trueID,
                         zombie = zombie:getOnlineID(),
                         defaultHP = HP,
-                        shouldNotStagger = ZombieTable.shouldNotStagger or zombie:isOnlyJawStab(),
+                        shouldNotStagger = ZombieTable.shouldNotStagger or zombie:isOnlyJawStab() or shouldAvoidDamage,
                     }
 
                     local hitReaction = ZomboidForge.DetermineHitReaction(attacker, zombie, handWeapon)
@@ -258,16 +261,14 @@ ZomboidForge.OnHit = function(attacker, zombie, handWeapon, damage)
                         args.hitReaction = hitReaction
                     end
 
-                    zombie:setAvoidDamage(true)
-
-                    if handWeapon:getFullType() == "Base.BareHands" then
+                    if handPush or shouldAvoidDamage then
                         args.damage = 0
                     end
 
                     sendClientCommand('ZombieHandler', 'DamageZombie', args)
-                elseif handWeapon:getFullType() ~= "Base.BareHands" then
+                elseif not handPush then
                     -- get zombie persistent data
-                    local PersistentZData = ZomboidForge.GetPersistentZData(trueID)
+                    local PersistentZData = ZomboidForge.GetPersistentZData(trueID,nil)
 
                     HP = PersistentZData.HP or HP
                     HP = HP - damage
@@ -277,23 +278,9 @@ ZomboidForge.OnHit = function(attacker, zombie, handWeapon, damage)
                         zombie:getEmitter():stopAll()
 
                         -- for some reason doing `zombie:Kill(attacker)` doesn't make sure the zombie dies
-                        zombie:setHealth(0)
-                        zombie:changeState(ZombieOnGroundState.instance())
-                        zombie:setAttackedBy(attacker)
-                        zombie:becomeCorpse()
+                        zombie:Kill(attacker)
 
                         PersistentZData.HP = nil
-                        
-                        --[[ god this shit is awful, fuck you with your mod ATRO
-                        if getActivatedMods():contains("Advanced_Trajectorys_Realistic_Overhaul") then
-                            player:setZombieKills(player:getZombieKills()+1)
-                            if not Advanced_trajectory.hasFlameWeapon then
-                                killXP = killXP or getSandboxOptions():getOptionByName("Advanced_trajectory.XPKillModifier"):getValue()
-                                -- multiplier to 0.67
-                                triggerEvent("OnWeaponHitXp",player, player:getPrimaryHandItem(), zombie, args.damage) -- OnWeaponHitXp From "KillCount",used(wielder,weapon,victim,damage)
-                                Events.OnWeaponHitXp.Add(player:getXp():AddXP(Perks.Aiming, killXP));
-                            end
-                        end]]
                     else
                         -- Makes sure the Zombie doesn't get oneshoted by whatever bullshit weapon
                         -- someone might use.

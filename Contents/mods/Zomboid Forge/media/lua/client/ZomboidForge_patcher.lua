@@ -22,6 +22,17 @@ local tostring = tostring --tostring function
 
 --- import module from ZomboidForge
 local ZomboidForge = require "ZomboidForge_module"
+local HiddenSandboxOptions = require("HiddenSandboxOptions")
+
+--- Remove vanilla sandbox options
+HiddenSandboxOptions["ZombieLore.Speed"] = true
+HiddenSandboxOptions["ZombieLore.Strength"] = true
+HiddenSandboxOptions["ZombieLore.Toughness"] = true
+HiddenSandboxOptions["ZombieLore.Cognition"] = true
+HiddenSandboxOptions["ZombieLore.Memory"] = true
+HiddenSandboxOptions["ZombieLore.Sight"] = true
+HiddenSandboxOptions["ZombieLore.Hearing"] = true
+
 
 --- Import original methods and keep them stored
 ZomboidForge.Patcher = {}

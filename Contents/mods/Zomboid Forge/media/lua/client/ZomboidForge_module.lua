@@ -129,10 +129,7 @@ local ZomboidForge = {
     }
 }
 
-if isClient() then
-    ZomboidForge.InfiniteHP = 1
-else
-    ZomboidForge.InfiniteHP = 100
-end
+-- hp to set in solo to a high value to make sure the zombie doesn't die
+ZomboidForge.InfiniteHP = 100
 
 return ZomboidForge
