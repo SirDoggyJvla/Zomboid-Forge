@@ -218,8 +218,8 @@ ZomboidForge.OnHit = function(attacker, zombie, handWeapon, damage)
         end
 
         -- shouldAvoidDamage
-        local shouldAvoidDamage = ZombieTable.shouldAvoidDamage 
-        local setAvoidDamage = shouldAvoidDamage or isClient() and HP and HP ~= 1 and true
+        local shouldAvoidDamage = ZombieTable.shouldAvoidDamage
+        local setAvoidDamage = shouldAvoidDamage or isClient() and HP and HP ~= 1 and true or false
         if zombie:avoidDamage() ~= setAvoidDamage then
             zombie:setAvoidDamage(setAvoidDamage)
         end
