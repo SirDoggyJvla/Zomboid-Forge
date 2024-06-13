@@ -70,15 +70,8 @@ ZomboidForge.Commands.ZombieHandler.DamageZombie = function(args)
         -- kill if need to kill
         -- else stagger with proper HitReaction
         if args.kill then
-            -- delete emitters
-            zombie:getEmitter():stopAll()
-
             -- kill zombie
-            zombie:Kill(attacker)
-            zombie:setHealth(0)
-            zombie:changeState(ZombieOnGroundState.instance())
-            zombie:setAttackedBy(attacker)
-            zombie:becomeCorpse()
+            ZomboidForge.KillZombie(zombie,attacker)
 
             -- add the death animation
             zombie:setHitReaction("EndDeath")

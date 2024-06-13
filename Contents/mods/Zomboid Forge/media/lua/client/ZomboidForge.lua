@@ -234,8 +234,16 @@ ZomboidForge.OnHit = function(attacker, zombie, handWeapon, damage)
         if attacker == player then
             -- skip if no HP stat or HP is 1
             if HP and HP ~= 1 then
-                -- use custom damage function if exists
-                if ZombieTable.customDamage then
+                local jawStabDeath -- jaw stab death
+                -- if is jawStabImmune then damage = 0
+                -- else use custom damage function if exists
+                if zombie:isKnifeDeath() then
+                    if ZombieTable.jawStabImmune then
+                        damage = 0 -- don't damage the zombie
+                    else
+                        jawStabDeath = true
+                    end
+                elseif ZombieTable.customDamage then
                     damage = ZomboidForge[ZombieTable.customDamage](ZType,attacker, zombie, handWeapon, damage)
                 end
 
@@ -265,6 +273,11 @@ ZomboidForge.OnHit = function(attacker, zombie, handWeapon, damage)
                         args.damage = 0
                     end
 
+                    if jawStabDeath then
+                        ZomboidForge.KillZombie(zombie,attacker)
+                        args.hitReaction = "KnifeDeath"
+                    end
+
                     sendClientCommand('ZombieHandler', 'DamageZombie', args)
                 elseif not handPush then
                     -- get zombie persistent data
@@ -273,13 +286,19 @@ ZomboidForge.OnHit = function(attacker, zombie, handWeapon, damage)
                     HP = PersistentZData.HP or HP
                     HP = HP - damage
 
-                    if HP <= 0 then
-                        -- reset emitters
-                        zombie:getEmitter():stopAll()
+                    if HP <= 0 or jawStabDeath then
+                        -- kill zombie
+                        ZomboidForge.KillZombie(zombie,attacker)
 
-                        -- for some reason doing `zombie:Kill(attacker)` doesn't make sure the zombie dies
-                        zombie:Kill(attacker)
+                        -- doesn't do shit seems like, bcs of the way zombies are killed
+                        -- could look into the java how zombies are properly killed
+                        -- if jawStabDeath then
+                        --     zombie:setHitReaction("KnifeDeath")
+                        -- else
+                        --     zombie:setHitReaction("EndDeath")
+                        -- end
 
+                        -- delete HP data
                         PersistentZData.HP = nil
                     else
                         -- Makes sure the Zombie doesn't get oneshoted by whatever bullshit weapon

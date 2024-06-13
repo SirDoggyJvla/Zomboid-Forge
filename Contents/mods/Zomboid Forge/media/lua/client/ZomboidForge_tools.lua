@@ -466,6 +466,21 @@ ZomboidForge.DeleteZombieData = function(trueID)
     end
 end
 
+-- Kills `IsoZombie` based and update attacker stats.
+---@param zombie        IsoZombie
+---@param attacker      IsoPlayer
+ZomboidForge.KillZombie = function(zombie,attacker)
+    -- remove emitters
+    zombie:getEmitter():stopAll()
+
+    -- kill zombie, cannot use zombie:Kill(attacker) bcs it doesn't do the job right
+    zombie:setHealth(0)
+    zombie:changeState(ZombieOnGroundState.instance())
+    zombie:setAttackedBy(attacker)
+    zombie:becomeCorpse()
+    -- attacker:setZombieKills(attacker:getZombieKills()+1)
+end
+
 --#region Determine Hit Reaction for zombies in multiplayer
 
 -- used to retrieve R and L shots
@@ -661,7 +676,8 @@ ZomboidForge.ApplyHitReaction = function(zombie,attacker,hitReaction)
         zombie:setHitReaction("")
 
         -- remove critical hit
-        if (zombie:getPlayerAttackPosition() == "LEFT" or zombie:getPlayerAttackPosition() == "RIGHT")    
+        if (zombie:getPlayerAttackPosition() == "LEFT"
+        or zombie:getPlayerAttackPosition() == "RIGHT")
         then
             attacker:setCriticalHit(false)
         end
