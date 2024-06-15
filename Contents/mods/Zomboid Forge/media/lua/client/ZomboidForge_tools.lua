@@ -18,20 +18,25 @@ local pairs = pairs -- pairs function
 local ZombRand = ZombRand -- java function
 local tostring = tostring --tostring function
 local Long = Long --Long for pID
-local player = getPlayer()
 
 --- import module from ZomboidForge
 local ZomboidForge = require "ZomboidForge_module"
 local ZFModData = ModData.getOrCreate("ZomboidForge")
 
--- Initialize player
-ZomboidForge.OnCreatePlayerInitializations.ZomboidForge_tools = function()
-    player = getPlayer()
+-- localy initialize player
+local player = getPlayer()
+local function initTLOU_OnGameStart(playerIndex, player_init)
+	player = getPlayer()
 end
+Events.OnCreatePlayer.Remove(initTLOU_OnGameStart)
+Events.OnCreatePlayer.Add(initTLOU_OnGameStart)
 
-ZomboidForge.initModData_ZomboidForge_tools = function()
+-- localy initialize ModData
+local function initModData()
     ZFModData = ModData.getOrCreate("ZomboidForge")
 end
+Events.OnInitGlobalModData.Remove(initModData)
+Events.OnInitGlobalModData.Add(initModData)
 
 local A1, A2 = 727595, 798405  -- 5^17=D20*A1+A2
 local D20, D40 = 1048576, 1099511627776  -- 2^20, 2^40
@@ -549,14 +554,11 @@ ZomboidForge.DetermineHitReaction = function(attacker, zombie, handWeapon)
     --[[ used to add blood, will be done later if needed
     else
         local categories = handWeapon:getCategories()
-        -- if blunt
         if categories:contains("Blunt") then
-            zombie:addLineChatElement("Blunt")
-        -- unarmed
+            
         elseif not categories:contains("Unarmed") then
-            zombie:addLineChatElement("Else")
+
         else
-            zombie:addLineChatElement("Unarmed")
         end
         ]]
     end

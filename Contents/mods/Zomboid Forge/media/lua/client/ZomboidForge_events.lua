@@ -19,8 +19,6 @@ local ZomboidForge = require "ZomboidForge_module"
 --- On start Events
 Events.OnLoad.Add(ZomboidForge.OnLoad)
 Events.OnGameStart.Add(ZomboidForge.OnGameStart)
-Events.OnInitGlobalModData.Add(ZomboidForge.initModData_ZomboidForge)
-Events.OnInitGlobalModData.Add(ZomboidForge.initModData_ZomboidForge_tools)
 
 -- initialize local player variables that need to be retreived later than lua files load
 Events.OnCreatePlayer.Add(

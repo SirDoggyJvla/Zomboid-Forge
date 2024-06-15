@@ -17,15 +17,17 @@ local ipairs = ipairs -- ipairs function
 local pairs = pairs -- pairs function
 local ZombRand = ZombRand -- java function
 local tostring = tostring --tostring function
-local player = getPlayer() --is initialized later, set here for in-game reloads
 
 --- import module from ZomboidForge
 local ZomboidForge = require "ZomboidForge_module"
 
--- Initialize player
-ZomboidForge.OnCreatePlayerInitializations.ZomboidForge_commands = function()
-    player = getPlayer()
+-- localy initialize player
+local player = getPlayer()
+local function initTLOU_OnGameStart(playerIndex, player_init)
+	player = getPlayer()
 end
+Events.OnCreatePlayer.Remove(initTLOU_OnGameStart)
+Events.OnCreatePlayer.Add(initTLOU_OnGameStart)
 
 local zombieList
 ---@param onlineID          int

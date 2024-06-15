@@ -17,24 +17,27 @@ local ipairs = ipairs -- ipairs function
 local pairs = pairs -- pairs function
 local ZombRand = ZombRand -- java function
 local tostring = tostring --tostring function
-local player = getPlayer()
 
 --- import module from ZomboidForge
 local ZomboidForge = require "ZomboidForge_module"
 local ZFModData = ModData.getOrCreate("ZomboidForge")
 
--- zombie list
+-- localy initialize player and zombie list
+local player = getPlayer()
 local zombieList
-
--- Initialize player
-ZomboidForge.OnCreatePlayerInitializations.ZomboidForge = function()
-    player = getPlayer()
+local function initTLOU_OnGameStart(playerIndex, player_init)
+	player = getPlayer()
     zombieList = player:getCell():getZombieList()
 end
+Events.OnCreatePlayer.Remove(initTLOU_OnGameStart)
+Events.OnCreatePlayer.Add(initTLOU_OnGameStart)
 
-ZomboidForge.initModData_ZomboidForge = function()
+-- localy initialize ModData
+local function initModData()
     ZFModData = ModData.getOrCreate("ZomboidForge")
 end
+Events.OnInitGlobalModData.Remove(initModData)
+Events.OnInitGlobalModData.Add(initModData)
 
 --- OnLoad function to initialize the mod
 ZomboidForge.OnLoad = function()
