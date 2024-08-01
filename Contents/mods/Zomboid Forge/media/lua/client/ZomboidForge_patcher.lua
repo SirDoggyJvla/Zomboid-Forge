@@ -119,6 +119,20 @@ end
 
 --#endregion
 
+--#region Patching Check Upstairs
+
+if getActivatedMods():contains("CheckUpstairs") then
+    require "ZomboidForge_visuals"
+    local CheckUpstairs = require "CheckUpstairs"
+
+    Events.OnZombieUpdate.Remove(CheckUpstairs.HandleNametag)
+    CheckUpstairs.HandleNametag = nil
+
+    CheckUpstairs.ShowNametag = ZomboidForge.ShowZombieNametag
+end
+
+--#endregion
+
 --#region Patcher to ATRO
 
 if getActivatedMods():contains("Advanced_Trajectorys_Realistic_Overhaul") then

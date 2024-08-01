@@ -11,7 +11,7 @@ This file defines the server side lua of ZomboidForge.
 ]]--
 --[[ ================================================ ]]--
 
-if isClient() then return end
+if not isServer() then return end
 
 --- Import functions localy for performances reasons
 local table = table -- Lua's table module
@@ -41,46 +41,23 @@ ZomboidForge_server.Commands.ZombieHandler.RemoveEmitters = function(player, arg
 	sendServerCommand('ZombieHandler', 'RemoveEmitters', {id = player:getOnlineID(),zombie = args.zombie})
 end
 
-ZomboidForge_server.Commands.ZombieHandler.DamageZombie = function(player,args)
-	local trueID = args.trueID
-	-- get zombie data
-	if not ZFModData.PersistentZData then
-		ZFModData.PersistentZData = {}
-	end
-	local PersistentZData = ZFModData.PersistentZData[trueID]
-	if not PersistentZData then
-		ZFModData.PersistentZData[trueID] = {}
-		PersistentZData = ZFModData.PersistentZData[trueID]
-	end
+ZomboidForge_server.Commands.ZombieHandler.KillZombie = function(player,args)
+	sendServerCommand(
+		"ZombieHandler",
+		"DamageZombie",
+		{
+			attacker = player:getOnlineID(),
+			kill = true,
+			zombie = args.zombieOnlineID,
+		}
+	)
+end
 
-	-- get zombie HP
-	local HP = PersistentZData.HP or args.defaultHP
+ZomboidForge_server.Commands.ZombieHandler.UpdateHealth = function(player,args)
+	local zombie = ZomboidForge_server.getZombieByOnlineID(getPlayerByOnlineID(args.attackerOnlineID),args.zombieOnlineID)
+	if not zombie then return end
 
-	-- apply damage
-	local damage = args.damage
-	HP = HP - damage
-
-	-- determine if zombie gets killed
-	local kill = HP <= 0
-
-	-- ask clients to handle the zombie HP/killing
-	local new_args = {
-		attacker = player:getOnlineID(),
-		zombie = args.zombie,
-		kill = kill,
-		shouldNotStagger = args.shouldNotStagger,
-		damage = damage, -- needed for ATRO compat
-	}
-	sendServerCommand('ZombieHandler', 'DamageZombie', new_args)
-
-	-- delete persistent data about this zombie if it gets killed
-	-- else update HP counter
-	if kill then
-		PersistentZData = nil
-	else
-		-- update the HP counter of PersistentZData
-		PersistentZData.HP = HP
-	end
+	zombie:setHealth(args.defaultHP)
 end
 
 --#endregion

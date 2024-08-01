@@ -14,26 +14,17 @@ This file defines the events used by Zomboid Forge
 --- import module
 require "ZomboidForge"
 require "ZomboidForge_tools"
+require "ZomboidForge_visuals"
 local ZomboidForge = require "ZomboidForge_module"
 
 --- On start Events
 Events.OnLoad.Add(ZomboidForge.OnLoad)
 Events.OnGameStart.Add(ZomboidForge.OnGameStart)
 
--- initialize local player variables that need to be retreived later than lua files load
-Events.OnCreatePlayer.Add(
-    function()
-		for k,_ in pairs(ZomboidForge.OnCreatePlayerInitializations) do
-			ZomboidForge.OnCreatePlayerInitializations[k]()
-		end
-	end
-)
-
 --- Main Events handling
 Events.OnZombieUpdate.Add(ZomboidForge.ZombieUpdate)
 Events.OnWeaponHitCharacter.Add(ZomboidForge.OnHit)
 Events.OnZombieDead.Add(ZomboidForge.OnDeath)
-Events.OnPlayerUpdate.Add(ZomboidForge.GetZombieOnPlayerMouse)
 
 --- Counter updater
 Events.OnTick.Add(ZomboidForge.OnTick)

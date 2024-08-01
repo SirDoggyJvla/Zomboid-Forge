@@ -21,6 +21,8 @@ local tostring = tostring --tostring function
 --- import module from ZomboidForge
 local ZomboidForge = require "ZomboidForge_module"
 local ZFModData = ModData.getOrCreate("ZomboidForge")
+local ZFModOptions = require "ZomboidForge_ClientOption"
+ZFModOptions = ZFModOptions.options_data
 
 -- localy initialize player and zombie list
 local player = getPlayer()
@@ -94,14 +96,35 @@ end
 -- Steps of Zombie update:
 --
 --      `Initialize zombie type if needed`
+--      `Update zombie visuals`
+--      `Updates stats that can verified`
+--      `Set combat data`
+--      `Update nametag`
 --      `Run custom behavior`
+--      `OnThump behavior`
 --      `Run zombie attack function`
----@param zombie        IsoZombie
+---@param zombie IsoZombie
 ZomboidForge.ZombieUpdate = function(zombie)
+    if not ZomboidForge.IsZombieValid(zombie) then return end
+
     -- get zombie data
     local trueID = ZomboidForge.pID(zombie)
     local ZType = ZomboidForge.GetZType(trueID)
     local ZombieTable = ZomboidForge.ZTypes[ZType]
+
+    -- update visuals
+    ZomboidForge.UpdateVisuals(zombie,ZombieTable,ZType)
+
+    -- update stats that can be verified
+    ZomboidForge.UpdateZombieStatsVerifiable(zombie,ZombieTable)
+
+    -- set combat data
+    ZomboidForge.SetZombieCombatData(zombie, ZombieTable, ZType, trueID)
+
+    -- update nametag
+    if SandboxVars.ZomboidForge.Nametags and ZFModOptions.NameTag.value then
+        ZomboidForge.UpdateNametag(zombie,ZombieTable)
+    end
 
     -- run custom behavior functions for this zombie
     if ZombieTable.customBehavior then
@@ -110,6 +133,7 @@ ZomboidForge.ZombieUpdate = function(zombie)
         end
     end
 
+    -- run onThump functions
     if ZombieTable.onThump then
         -- run code if zombie has thumping target
         local thumped = zombie:getThumpTarget()
@@ -162,171 +186,36 @@ ZomboidForge.OnTick = function(tick)
     if zombieIndex >= 0 and zombieIndex%1 == 0 then
         if zombieList_size > zombieIndex then
             local zombie = zombieList:get(zombieIndex)
-            ZomboidForge.SetZombieData(zombie,nil)
+            if ZomboidForge.IsZombieValid(zombie) then
+                ZomboidForge.SetZombieData(zombie,nil)
+            end
         else
             zeroTick = tick + 1
         end
     end
-
-    -- if players are allowed to use nametags
-    if SandboxVars.ZomboidForge.Nametags then
-        ZomboidForge.UpdateNametag()
-    end
 end
 
---- `Zombie` has agro on an `IsoGameCharacter`. 
--- 
--- Trigger `zombieAgro` of `Zombie` depending on `ZType`.
----@param zombie        IsoZombie
----@param ZType         string
-ZomboidForge.ZombieAgro = function(zombie,ZType)
-    local target = zombie:getTarget()
-    if target and target:isCharacter() then
-        local ZombieTable = ZomboidForge.ZTypes[ZType]
-        if instanceof(target, "IsoPlayer") then
-            ---@cast target IsoPlayer
-            ZomboidForge.ShowZombieName(target, zombie)
-        end
-        if ZombieTable.zombieAgro then
-            for i=1,#ZombieTable.zombieAgro do
-                ZomboidForge[ZombieTable.zombieAgro[i]](ZType,target,zombie)
-            end
-        end
-    end
-end
-
---- `Player` attacking `Zombie`. 
--- 
--- Trigger `funconhit` of `Zombie` depending on `ZType`.
---
+-- Trigger `OnHit` behavior of `Zombie` depending on `ZType`.
 -- Handles the custom HP of zombies and apply custom damage depending on the customDamage function.
----@param attacker      IsoPlayer
----@param zombie        IsoZombie
+---@param attacker      IsoGameCharacter
+---@param victim        IsoGameCharacter
 ---@param handWeapon    HandWeapon
 ---@param damage        float
-ZomboidForge.OnHit = function(attacker, zombie, handWeapon, damage)
-    if zombie:isZombie() and zombie:isAlive() then
-        -- show nametag
-        ZomboidForge.ShowZombieName(attacker, zombie)
+ZomboidForge.OnHit = function(attacker, victim, handWeapon, damage)
+    if not victim:isAlive() then return end
 
-        -- get zombie data
-        local trueID = ZomboidForge.pID(zombie)
-        local ZType = ZomboidForge.GetZType(trueID)
-        local ZombieTable = ZomboidForge.ZTypes[ZType]
-        local HP = ZombieTable.HP
+    if not attacker:isZombie() and victim:isZombie() then
+        if not ZomboidForge.IsZombieValid(victim) then return end
 
-        -- resetHitTime
-        if ZombieTable.resetHitTime then
-            zombie:setHitTime(0)
-        end
-
-        -- shouldAvoidDamage
-        local shouldAvoidDamage = ZombieTable.shouldAvoidDamage
-        local setAvoidDamage = shouldAvoidDamage or isClient() and HP and HP ~= 1 and true or false
-        if zombie:avoidDamage() ~= setAvoidDamage then
-            zombie:setAvoidDamage(setAvoidDamage)
-        end
-
-        -- custom on hit functions
-        if ZombieTable.zombieOnHit then
-            for i=1,#ZombieTable.zombieOnHit do
-                ZomboidForge[ZombieTable.zombieOnHit[i]](ZType,attacker, zombie, handWeapon, damage)
-            end
-        end
-
-        if attacker == player then
-            -- skip if no HP stat or HP is 1
-            if HP and HP ~= 1 then
-                local jawStabDeath -- jaw stab death
-                -- if is jawStabImmune then damage = 0
-                -- else use custom damage function if exists
-                if zombie:isKnifeDeath() then
-                    if ZombieTable.jawStabImmune then
-                        damage = 0 -- don't damage the zombie
-                    else
-                        jawStabDeath = true
-                    end
-                elseif ZombieTable.customDamage then
-                    damage = ZomboidForge[ZombieTable.customDamage](ZType,attacker, zombie, handWeapon, damage)
-                end
-
-                local handPush = false
-                if handWeapon:getFullType() == "Base.BareHands" and math.floor(damage) <= 0 then
-                    handPush = true
-                end
-
-                -- set zombie health or kill zombie
-                if isClient() then
-                    local args = {
-                        damage = damage,
-                        trueID = trueID,
-                        zombie = zombie:getOnlineID(),
-                        defaultHP = HP,
-                        shouldNotStagger = ZombieTable.shouldNotStagger or zombie:isOnlyJawStab() or shouldAvoidDamage,
-                    }
-
-                    local hitReaction = ZomboidForge.DetermineHitReaction(attacker, zombie, handWeapon)
-
-                    if not args.shouldNotStagger then
-                        ZomboidForge.ApplyHitReaction(zombie,attacker,hitReaction)
-                        args.hitReaction = hitReaction
-                    end
-
-                    if handPush or shouldAvoidDamage then
-                        args.damage = 0
-                    end
-
-                    if jawStabDeath then
-                        ZomboidForge.KillZombie(zombie,attacker)
-                        args.hitReaction = "KnifeDeath"
-                    end
-
-                    sendClientCommand('ZombieHandler', 'DamageZombie', args)
-                elseif not handPush then
-                    -- get zombie persistent data
-                    local PersistentZData = ZomboidForge.GetPersistentZData(trueID,nil)
-
-                    HP = PersistentZData.HP or HP
-                    HP = HP - damage
-
-                    if HP <= 0 or jawStabDeath then
-                        -- kill zombie
-                        ZomboidForge.KillZombie(zombie,attacker)
-
-                        -- doesn't do shit seems like, bcs of the way zombies are killed
-                        -- could look into the java how zombies are properly killed
-                        -- if jawStabDeath then
-                        --     zombie:setHitReaction("KnifeDeath")
-                        -- else
-                        --     zombie:setHitReaction("EndDeath")
-                        -- end
-
-                        -- delete HP data
-                        PersistentZData.HP = nil
-                    else
-                        -- Makes sure the Zombie doesn't get oneshoted by whatever bullshit weapon
-                        -- someone might use.
-                        -- Updates the HP counter of PersistentZData
-                        zombie:setHealth(ZomboidForge.InfiniteHP)
-                        PersistentZData.HP = HP
-                    end
-                end
-            end
-
-            -- ATRO patch
-            -- display damage done to zombie from bullet
-            if getActivatedMods():contains("Advanced_Trajectorys_Realistic_Overhaul") then
-                if getSandboxOptions():getOptionByName("ATY_damagedisplay"):getValue() then
-                    displayDamageOnZom(damage, zombie) -- ATRO global function
-                end
-            end
-        end
+        ZomboidForge.PlayerAttacksZombie(attacker, victim, handWeapon, damage)
     end
 end
 
 --- OnDeath functions
 ---@param zombie        IsoZombie
 ZomboidForge.OnDeath = function(zombie)
+    if not ZomboidForge.IsZombieValid(zombie) then return end
+
     local trueID = ZomboidForge.pID(zombie)
 
     local ZType = ZomboidForge.GetZType(trueID)

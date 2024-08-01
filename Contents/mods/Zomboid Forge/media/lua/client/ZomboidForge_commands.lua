@@ -41,7 +41,7 @@ ZomboidForge.getZombieByOnlineID = function(onlineID)
     -- get zombie if in player's cell
     for i = 0,zombieList:size()-1 do
         local zombie = zombieList:get(i)
-        if zombie:getOnlineID() == onlineID then
+        if zombie:getOnlineID() == onlineID and ZomboidForge.IsZombieValid(zombie) then
             return zombie
         end
     end
@@ -56,6 +56,8 @@ ZomboidForge.Commands.ZombieHandler.SetAnimationVariable = function(args)
         -- retrieve zombie
         local zombie = ZomboidForge.getZombieByOnlineID(args.zombie)
         if zombie then
+            if not ZomboidForge.IsZombieValid(zombie) then return end
+
             zombie:setVariable(args.animationVariable,args.state)
         end
     end
@@ -66,6 +68,8 @@ ZomboidForge.Commands.ZombieHandler.DamageZombie = function(args)
     -- get zombie info
     local zombie = ZomboidForge.getZombieByOnlineID(args.zombie)
     if zombie then
+        if not ZomboidForge.IsZombieValid(zombie) then return end
+
         -- retrieve attacker IsoPlayer
         local attacker = getPlayerByOnlineID(args.attacker)
 
@@ -96,6 +100,8 @@ ZomboidForge.Commands.ZombieHandler.RemoveEmitters = function(args)
     -- get zombie info
     local zombie = ZomboidForge.getZombieByOnlineID(args.zombie)
     if zombie then
+        if not ZomboidForge.IsZombieValid(zombie) then return end
+
         zombie:getEmitter():stopAll()
     end
 end
