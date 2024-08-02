@@ -112,15 +112,6 @@ ZomboidForge.ZombieUpdate = function(zombie)
     local ZType = ZomboidForge.GetZType(trueID)
     local ZombieTable = ZomboidForge.ZTypes[ZType]
 
-    -- update visuals
-    ZomboidForge.UpdateVisuals(zombie,ZombieTable,ZType)
-
-    -- update stats that can be verified
-    ZomboidForge.UpdateZombieStatsVerifiable(zombie,ZombieTable)
-
-    -- set combat data
-    ZomboidForge.SetZombieCombatData(zombie, ZombieTable, ZType, trueID)
-
     -- update nametag
     if SandboxVars.ZomboidForge.Nametags and ZFModOptions.NameTag.value then
         ZomboidForge.UpdateNametag(zombie,ZombieTable)
@@ -183,9 +174,10 @@ ZomboidForge.OnTick = function(tick)
 
     -- Update zombie stats
     local zombieIndex = (tick - zeroTick)/tick_fraction
+    local zombie
     if zombieIndex >= 0 and zombieIndex%1 == 0 then
         if zombieList_size > zombieIndex then
-            local zombie = zombieList:get(zombieIndex)
+            zombie = zombieList:get(zombieIndex)
             if ZomboidForge.IsZombieValid(zombie) then
                 ZomboidForge.SetZombieData(zombie,nil)
             end
@@ -193,6 +185,32 @@ ZomboidForge.OnTick = function(tick)
             zeroTick = tick + 1
         end
     end
+
+    -- Update things than need to be updated every ticks
+    local showNametag = SandboxVars.ZomboidForge.Nametags and ZFModOptions.NameTag.value
+    for i = 0, zombieList_size - 1 do
+        zombie = zombieList:get(i)
+
+        -- get zombie data
+        local trueID = ZomboidForge.pID(zombie)
+        local ZType = ZomboidForge.GetZType(trueID)
+        local ZombieTable = ZomboidForge.ZTypes[ZType]
+
+        -- update visuals
+        ZomboidForge.UpdateVisuals(zombie,ZombieTable,ZType)
+
+        -- update stats that can be verified
+        ZomboidForge.UpdateZombieStatsVerifiable(zombie,ZombieTable)
+
+        -- set combat data
+        ZomboidForge.SetZombieCombatData(zombie, ZombieTable, ZType, trueID)
+
+        -- update nametag
+        if showNametag then
+            ZomboidForge.UpdateNametag(zombie,ZombieTable)
+        end
+    end
+
 end
 
 -- Trigger `OnHit` behavior of `Zombie` depending on `ZType`.
@@ -216,8 +234,8 @@ end
 ZomboidForge.OnDeath = function(zombie)
     if not ZomboidForge.IsZombieValid(zombie) then return end
 
+    -- get zombie data
     local trueID = ZomboidForge.pID(zombie)
-
     local ZType = ZomboidForge.GetZType(trueID)
 
     local ZombieTable = ZomboidForge.ZTypes[ZType]
@@ -232,5 +250,5 @@ ZomboidForge.OnDeath = function(zombie)
     zombie:getEmitter():stopAll()
 
     -- delete zombie data
-    ZomboidForge.DeleteZombieData(trueID)
+    ZomboidForge.DeleteZombieData(zombie,trueID)
 end

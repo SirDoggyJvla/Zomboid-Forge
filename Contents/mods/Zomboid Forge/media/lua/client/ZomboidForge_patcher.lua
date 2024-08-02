@@ -60,7 +60,7 @@ ZomboidForge.Patcher.RemoveAllEmitters = function()
 
         -- delete zombie data
         local trueID = ZomboidForge.pID(zombie)
-        ZomboidForge.DeleteZombieData(trueID)
+        ZomboidForge.DeleteZombieData(zombie, trueID)
         end
     end
 end
@@ -99,15 +99,15 @@ function ISSpawnHordeUI:onRemoveZombies()
 			local sq = getCell():getGridSquare(x,y,self.selectZ);
 			if sq then
 				for i=sq:getMovingObjects():size()-1,0,-1 do
-					local testZed = sq:getMovingObjects():get(i);
-					if instanceof(testZed, "IsoZombie") then
-                        ---@cast testZed IsoZombie
+					local zombie = sq:getMovingObjects():get(i);
+					if instanceof(zombie, "IsoZombie") then
+                        ---@cast zombie IsoZombie
                         -- remove all emitters
-                        testZed:getEmitter():stopAll()
+                        zombie:getEmitter():stopAll()
 
                         -- delete zombie data
-                        local trueID = ZomboidForge.pID(testZed)
-                        ZomboidForge.DeleteZombieData(trueID)
+                        local trueID = ZomboidForge.pID(zombie)
+                        ZomboidForge.DeleteZombieData(zombie, trueID)
 					end
 				end
 			end

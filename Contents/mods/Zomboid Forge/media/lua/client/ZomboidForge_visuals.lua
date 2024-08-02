@@ -252,17 +252,21 @@ ZomboidForge.UpdateNametag = function(zombie,ZombieTable)
     if ticks <= 0 then
         nonPersistentZData.ticks = nil
 
-        local zombieModData = zombie:getModData()
-        zombieModData.nametag = nil
-        zombieModData.color = nil
-        zombieModData.outline = nil
-        zombieModData.VerticalPlacement = nil
+        ZomboidForge.DeleteNametag(zombie)
     elseif ZomboidForge.IsZombieBehind(zombie,player) then
         ticks = math.min(ticks,100)
         nonPersistentZData.ticks = ticks - 100
     else
         nonPersistentZData.ticks = ticks - 1
     end
+end
+
+ZomboidForge.DeleteNametag = function(zombie)
+    local zombieModData = zombie:getModData()
+    zombieModData.nametag = nil
+    zombieModData.color = nil
+    zombieModData.outline = nil
+    zombieModData.VerticalPlacement = nil
 end
 
 -- Draws the nametag of the `zombie` based on the `ticks` value.

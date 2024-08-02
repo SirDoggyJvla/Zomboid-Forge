@@ -195,6 +195,7 @@ ZomboidForge.SyncZombieHealth = function(zombie,character,HP)
     end
 end
 
+
 -- Staggers the `zombie` based on a given `hitReaction` or determines it thanks to the `handWeapon`.
 ---@param zombie IsoZombie
 ---@param attacker IsoGameCharacter
@@ -211,6 +212,8 @@ end
 ZomboidForge.KillZombie = function(zombie,attacker)
     if not zombie:isAlive() then return end
 
+    ZomboidForge.SyncZombieHealth(zombie,attacker,0)
+
     -- remove emitters
     zombie:getEmitter():stopAll()
 
@@ -221,7 +224,7 @@ ZomboidForge.KillZombie = function(zombie,attacker)
     zombie:becomeCorpse()
     -- attacker:setZombieKills(attacker:getZombieKills()+1)
 
-    ZomboidForge.DeleteZombieData(ZomboidForge.pID(zombie))
+    ZomboidForge.DeleteZombieData(zombie,ZomboidForge.pID(zombie))
 end
 
 --#endregion

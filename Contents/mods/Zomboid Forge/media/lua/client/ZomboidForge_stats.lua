@@ -263,7 +263,7 @@ end
 
 -- Delete all data of an `IsoZombie` based on its given `trueID`.
 ---@param trueID        int
-ZomboidForge.DeleteZombieData = function(trueID)
+ZomboidForge.DeleteZombieData = function(zombie,trueID)
     -- delete non persistent zombie data
     ZomboidForge.NonPersistentZData[trueID] = nil
 
@@ -272,6 +272,8 @@ ZomboidForge.DeleteZombieData = function(trueID)
     if PersistentZData and PersistentZData[trueID] then
         PersistentZData[trueID] = nil
     end
+
+    ZomboidForge.DeleteNametag(zombie)
 end
 
 --#endregion
