@@ -112,11 +112,6 @@ ZomboidForge.ZombieUpdate = function(zombie)
     local ZType = ZomboidForge.GetZType(trueID)
     local ZombieTable = ZomboidForge.ZTypes[ZType]
 
-    -- update nametag
-    if SandboxVars.ZomboidForge.Nametags and ZFModOptions.NameTag.value then
-        ZomboidForge.UpdateNametag(zombie,ZombieTable)
-    end
-
     -- run custom behavior functions for this zombie
     if ZombieTable.customBehavior then
         for i = 1,#ZombieTable.customBehavior do
@@ -154,6 +149,7 @@ end
 
 local zeroTick = 0
 local time_before_update = 10 -- seconds
+local tickAmount = 0
 -- Handles the updating of the stats of every zombies as well as initializing them. zombieList is initialized
 -- for the client and doesn't need to be changed after. The code goes through every zombie index and updates
 -- the stats of each zombies at a rate of every `time_before_update` seconds and one after the other. A formula was made to update
@@ -172,6 +168,7 @@ ZomboidForge.OnTick = function(tick)
     local zombieList_size = zombieList:size()
     local tick_fraction = math.floor((time_before_update*60/zombieList_size)+0.5)
 
+
     -- Update zombie stats
     local zombieIndex = (tick - zeroTick)/tick_fraction
     local zombie
@@ -188,29 +185,47 @@ ZomboidForge.OnTick = function(tick)
 
     -- Update things than need to be updated every ticks
     local showNametag = SandboxVars.ZomboidForge.Nametags and ZFModOptions.NameTag.value
-    for i = 0, zombieList_size - 1 do
-        zombie = zombieList:get(i)
-
-        -- get zombie data
-        local trueID = ZomboidForge.pID(zombie)
-        local ZType = ZomboidForge.GetZType(trueID)
-        local ZombieTable = ZomboidForge.ZTypes[ZType]
-
-        -- update visuals
-        ZomboidForge.UpdateVisuals(zombie,ZombieTable,ZType)
-
-        -- update stats that can be verified
-        ZomboidForge.UpdateZombieStatsVerifiable(zombie,ZombieTable)
-
-        -- set combat data
-        ZomboidForge.SetZombieCombatData(zombie, ZombieTable, ZType, trueID)
-
-        -- update nametag
-        if showNametag then
-            ZomboidForge.UpdateNametag(zombie,ZombieTable)
-        end
+    local zombiesOnCursor
+    if showNametag then
+        zombiesOnCursor = ZomboidForge.GetZombiesOnCursor()
     end
 
+    -- Define the fraction variable
+    local UpdateRate = math.min(ZomboidForge.UpdateRate[ZFModOptions.UpdateRate.value],zombieList_size) -- for example, this means 1/10th of the zombieList_size per tick
+    tickAmount = tickAmount < UpdateRate - 1 and tickAmount + 1 or 0
+
+    for i = 0, zombieList_size - 1 do
+        -- get zombie and verify it's valid
+        zombie = zombieList:get(i)
+        if ZomboidForge.IsZombieValid(zombie) then
+            -- get zombie data
+            local trueID = ZomboidForge.pID(zombie)
+            local ZType = ZomboidForge.GetZType(trueID)
+            local ZombieTable = ZomboidForge.ZTypes[ZType]
+
+            -- Perform these operations for 1/variable of the zombies each tick
+            if i%UpdateRate == tickAmount then
+                if player:CanSee(zombie) then
+                    -- update visuals
+                    ZomboidForge.UpdateVisuals(zombie, ZombieTable, ZType)
+
+                    -- update stats that can be verified
+                    ZomboidForge.UpdateZombieStatsVerifiable(zombie, ZombieTable)
+
+                    -- set combat data
+                    ZomboidForge.SetZombieCombatData(zombie, ZombieTable, ZType, trueID)
+                end
+            end
+
+            -- update nametag
+            if showNametag and ZombieTable.name then
+                local ticks = zombie:getModData().ticks
+                local valid = ZomboidForge.IsZombieValidForNametag(zombie, zombiesOnCursor)
+
+                ZomboidForge.UpdateNametag(zombie, ZombieTable, ticks, valid)
+            end
+        end
+    end
 end
 
 -- Trigger `OnHit` behavior of `Zombie` depending on `ZType`.

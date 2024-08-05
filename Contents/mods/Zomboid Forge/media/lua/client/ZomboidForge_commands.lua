@@ -78,9 +78,6 @@ ZomboidForge.Commands.ZombieHandler.DamageZombie = function(args)
         if args.kill then
             -- kill zombie
             ZomboidForge.KillZombie(zombie,attacker)
-
-            -- add the death animation
-            zombie:setHitReaction("EndDeath")
         else
             if not zombie:avoidDamage() then
                 zombie:setAvoidDamage(true)
@@ -91,6 +88,19 @@ ZomboidForge.Commands.ZombieHandler.DamageZombie = function(args)
             end
         end
     end
+end
+
+-- Kill zombie
+ZomboidForge.Commands.ZombieHandler.KillZombie = function(args)
+    -- get zombie info
+    local zombie = ZomboidForge.getZombieByOnlineID(args.zombie)
+    if not zombie or not ZomboidForge.IsZombieValid(zombie) then return end
+
+    -- retrieve attacker IsoPlayer
+    local attacker = getPlayerByOnlineID(args.attacker)
+
+    -- kill zombie
+    ZomboidForge.KillZombie(zombie,attacker)
 end
 
 -- Sends a request to server to update every clients animationVariable for every clients.

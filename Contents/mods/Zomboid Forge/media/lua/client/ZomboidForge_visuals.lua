@@ -101,7 +101,7 @@ ZomboidForge.UpdateVisuals = function(zombie,ZombieTable,ZType)
     -- zombie clothing visuals
     local clothingVisuals = ZombieTable.clothingVisuals
     if clothingVisuals then
-        -- get visuals and skip of none
+        -- get visuals and skip if none
         local visuals = zombie:getItemVisuals()
         if visuals then
             -- remove new visuals
@@ -216,20 +216,8 @@ end
 -- Updates the nametag of the `zombie` if valid.
 ---@param zombie IsoZombie
 ---@param ZombieTable table
-ZomboidForge.UpdateNametag = function(zombie,ZombieTable)
-    -- get name and if none then no nametag should be set
-    local name = getText(ZombieTable.name)
-    if not name then return end
-
-    -- retrieve nametag info
-    local trueID = ZomboidForge.pID(zombie)
-    local nonPersistentZData = ZomboidForge.GetNonPersistentZData(trueID,"nametag")
-
-    -- retrieve tick info
-    local ticks = nonPersistentZData.ticks
-
+ZomboidForge.UpdateNametag = function(zombie,ZombieTable,ticks,valid)
     -- if not ticks then checks that nametag should be shown
-    local valid = ZomboidForge.IsZombieValidForNametag(zombie)
     if not ticks then
         if not valid then
             return
@@ -240,24 +228,20 @@ ZomboidForge.UpdateNametag = function(zombie,ZombieTable)
         ticks = ZomboidForge.GetNametagTickValue(ZombieTable)
     end
 
-    -- instantly fade zombie nametag
-    -- if ZomboidForge.IsZombieBehind(zombie,player) then
-    --     ticks = math.min(ticks,100)
-    -- end
-
     -- draw nametag
     ZomboidForge.DrawNameTag(zombie,ZombieTable,ticks)
 
+    local zombieModData = zombie:getModData()
     -- reduce value of nametag or delete it
     if ticks <= 0 then
-        nonPersistentZData.ticks = nil
+        zombieModData.ticks = nil
 
         ZomboidForge.DeleteNametag(zombie)
     elseif ZomboidForge.IsZombieBehind(zombie,player) then
         ticks = math.min(ticks,100)
-        nonPersistentZData.ticks = ticks - 100
+        zombieModData.ticks = ticks - 5
     else
-        nonPersistentZData.ticks = ticks - 1
+        zombieModData.ticks = ticks - 1
     end
 end
 
@@ -331,7 +315,8 @@ end
 -- Checks if the `zombie` is valid to have its nametag displayed for local player.
 ---@param zombie IsoZombie
 ---@return boolean
-ZomboidForge.IsZombieValidForNametag = function(zombie)
+ZomboidForge.IsZombieValidForNametag = function(zombie,zombiesOnCursor)
+    -- retrieve zombie info
     local isBehind = ZomboidForge.IsZombieBehind(zombie,player)
 
     -- test for each options
@@ -358,7 +343,7 @@ ZomboidForge.IsZombieValidForNametag = function(zombie)
         end
 
     -- 4. draw if zombie is in radius of cursor detection
-    elseif ZomboidForge.IsZombieOnCursor(zombie) then
+    elseif zombiesOnCursor[zombie] then
         return true
     end
 

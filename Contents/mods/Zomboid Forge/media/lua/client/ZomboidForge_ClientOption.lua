@@ -14,6 +14,48 @@ This file defines the Mod Options for the mod Zomboid Forge
 local name = getText("IGUI_ZomboidForge_Zombie")
 local ZFModOptions = {
 	options_data = {
+		-- ticks before nametag disappears
+		UpdateRate = {
+			-- choices
+			getText("IGUI_ZomboidForge_UpdateRate1"),
+			getText("IGUI_ZomboidForge_UpdateRate2"),
+			getText("IGUI_ZomboidForge_UpdateRate3"),
+			getText("IGUI_ZomboidForge_UpdateRate4"),
+			getText("IGUI_ZomboidForge_UpdateRate5"),
+			getText("IGUI_ZomboidForge_UpdateRate6"),
+			getText("IGUI_ZomboidForge_UpdateRate7"),
+			getText("IGUI_ZomboidForge_UpdateRate8"),
+			getText("IGUI_ZomboidForge_UpdateRate9"),
+			getText("IGUI_ZomboidForge_UpdateRate10"),
+			getText("IGUI_ZomboidForge_UpdateRate11"),
+			getText("IGUI_ZomboidForge_UpdateRate12"),
+			getText("IGUI_ZomboidForge_UpdateRate13"),
+			getText("IGUI_ZomboidForge_UpdateRate14"),
+			getText("IGUI_ZomboidForge_UpdateRate15"),
+			getText("IGUI_ZomboidForge_UpdateRate16"),
+			getText("IGUI_ZomboidForge_UpdateRate17"),
+			getText("IGUI_ZomboidForge_UpdateRate18"),
+			getText("IGUI_ZomboidForge_UpdateRate19"),
+			getText("IGUI_ZomboidForge_UpdateRate20"),
+			getText("IGUI_ZomboidForge_UpdateRate21"),
+			getText("IGUI_ZomboidForge_UpdateRate22"),
+			getText("IGUI_ZomboidForge_UpdateRate23"),
+			getText("IGUI_ZomboidForge_UpdateRate24"),
+			getText("IGUI_ZomboidForge_UpdateRate25"),
+			getText("IGUI_ZomboidForge_UpdateRate26"),
+			getText("IGUI_ZomboidForge_UpdateRate27"),
+			getText("IGUI_ZomboidForge_UpdateRate28"),
+			getText("IGUI_ZomboidForge_UpdateRate29"),
+			getText("IGUI_ZomboidForge_UpdateRate30"),
+			getText("IGUI_ZomboidForge_UpdateRate31"),
+			getText("IGUI_ZomboidForge_UpdateRate32"),
+
+			-- properties
+			name = getText("IGUI_ZomboidForge_UpdateRate"),
+			tooltip = getText("IGUI_ZomboidForge_UpdateRate_Tooltip"),
+			default = 10,
+		},
+
 		-- allows client to chose to activate nametags or not
 		NameTag = {
 			-- properties

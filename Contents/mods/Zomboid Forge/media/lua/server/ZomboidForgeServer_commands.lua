@@ -44,7 +44,7 @@ end
 ZomboidForge_server.Commands.ZombieHandler.KillZombie = function(player,args)
 	sendServerCommand(
 		"ZombieHandler",
-		"DamageZombie",
+		"KillZombie",
 		{
 			attacker = player:getOnlineID(),
 			kill = true,
@@ -54,10 +54,22 @@ ZomboidForge_server.Commands.ZombieHandler.KillZombie = function(player,args)
 end
 
 ZomboidForge_server.Commands.ZombieHandler.UpdateHealth = function(player,args)
-	local zombie = ZomboidForge_server.getZombieByOnlineID(getPlayerByOnlineID(args.attackerOnlineID),args.zombieOnlineID)
+	-- only update if call from attacker
+	local attacker = getPlayerByOnlineID(args.attackerOnlineID)
+	if player ~= attacker then return end
+
+	-- get zombie
+	local zombieID = args.zombieOnlineID
+	local zombie = ZomboidForge_server.getZombieByOnlineID(attacker,zombieID)
 	if not zombie then return end
 
+	-- set zombie health
 	zombie:setHealth(args.defaultHP)
+
+	-- kill zombie if zombie should die
+	if args.defaultHP <= 0 then
+		ZomboidForge_server.Commands.ZombieHandler.KillZombie(attacker,{zombieOnlineID = zombieID})
+	end
 end
 
 --#endregion
