@@ -126,12 +126,17 @@ ZomboidForge.RemoveClothingVisuals = function(zombie,ZType,visuals,locations)
     -- cycle backward to not have any fuck up in index whenever one is removed
     for i = visuals:size() - 1, 0, -1 do
         local item = visuals:get(i)
-        local location = item:getScriptItem():getBodyLocation()
-        local location_remove = locations[item:getScriptItem():getBodyLocation()]
-        if location_remove then
-            local getRemove = ZomboidForge.GetBooleanResult(zombie,ZType,location_remove,"remove "..tostring(location))
-            if getRemove then
-                visuals:remove(item)
+        if item then
+            local scriptItem = item:getScriptItem()
+            if scriptItem then
+                local location = scriptItem:getBodyLocation()
+                local location_remove = locations[location]
+                if location_remove then
+                    local getRemove = ZomboidForge.GetBooleanResult(zombie,ZType,location_remove,"remove "..tostring(location_remove))
+                    if getRemove then
+                        visuals:remove(item)
+                    end
+                end
             end
         end
     end
