@@ -223,15 +223,16 @@ end
 -- Zombies that are around the client radius cursor will be valid to show their nametags.
 ---@return table
 ZomboidForge.GetZombiesOnCursor = function()
+    local zombiesOnCursor = {}
+
     local aiming = player:isAiming()
-    if not ZFModOptions.NoAimingNeeded.value and not aiming then return false end
+    if not ZFModOptions.NoAimingNeeded.value and not aiming then return zombiesOnCursor end
 
     -- get cursor coordinates
     local mouseX, mouseY = ISCoordConversion.ToWorld(getMouseXScaled(), getMouseYScaled(), 0)
     mouseX = aiming and mouseX + 1.5 or mouseX
     mouseY = aiming and mouseY + 1.5 or mouseY
 
-    local zombiesOnCursor = {}
     local r = ZFModOptions.Radius.value
     local square
     local movingObjects
