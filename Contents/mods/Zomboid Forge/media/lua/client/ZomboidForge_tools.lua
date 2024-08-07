@@ -247,7 +247,7 @@ ZomboidForge.GetZombiesOnCursor = function()
                         movingObjects = square:getMovingObjects()
                         for i = 0, movingObjects:size() -1 do
                             zombie = movingObjects:get(i)
-                            if zombie:isZombie() then
+                            if zombie and zombie:isZombie() then
                                 zombiesOnCursor[zombie] = true
                             end
                         end
