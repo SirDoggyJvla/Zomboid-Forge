@@ -25,11 +25,11 @@ local ZFModOptions = require "ZomboidForge_ClientOption"
 ZFModOptions = ZFModOptions.options_data
 
 -- localy initialize player and zombie list
-local player = getPlayer()
+local client_player = getPlayer()
 local zombieList
-local function initTLOU_OnGameStart(playerIndex, player_init)
-	player = getPlayer()
-    zombieList = player:getCell():getZombieList()
+local function initTLOU_OnGameStart(_, _)
+	client_player = getPlayer()
+    zombieList = client_player:getCell():getZombieList()
 end
 Events.OnCreatePlayer.Remove(initTLOU_OnGameStart)
 Events.OnCreatePlayer.Add(initTLOU_OnGameStart)
@@ -162,7 +162,7 @@ local tickAmount = 0
 ZomboidForge.OnTick = function(tick)
     -- initialize zombieList
     if not zombieList then
-        zombieList = player:getCell():getZombieList()
+        zombieList = client_player:getCell():getZombieList()
     end
 
     local zombieList_size = zombieList:size()
@@ -205,7 +205,7 @@ ZomboidForge.OnTick = function(tick)
 
             -- Perform these operations for 1/variable of the zombies each tick
             if i%UpdateRate == tickAmount then
-                if player:CanSee(zombie) then
+                if client_player:CanSee(zombie) then
                     -- update visuals
                     ZomboidForge.UpdateVisuals(zombie, ZombieTable, ZType)
 

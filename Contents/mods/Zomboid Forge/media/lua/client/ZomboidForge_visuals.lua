@@ -24,9 +24,9 @@ local ZFModOptions = require "ZomboidForge_ClientOption"
 ZFModOptions = ZFModOptions.options_data
 
 -- localy initialize player
-local player = getPlayer()
-local function initTLOU_OnGameStart(playerIndex, player_init)
-	player = getPlayer()
+local client_player = getPlayer()
+local function initTLOU_OnGameStart(_, _)
+	client_player = getPlayer()
 end
 Events.OnCreatePlayer.Remove(initTLOU_OnGameStart)
 Events.OnCreatePlayer.Add(initTLOU_OnGameStart)
@@ -242,7 +242,7 @@ ZomboidForge.UpdateNametag = function(zombie,ZombieTable,ticks,valid)
         zombieModData.ticks = nil
 
         ZomboidForge.DeleteNametag(zombie)
-    elseif ZomboidForge.IsZombieBehind(zombie,player) then
+    elseif ZomboidForge.IsZombieBehind(zombie,client_player) then
         ticks = math.min(ticks,100)
         zombieModData.ticks = ticks - 5
     else
@@ -322,18 +322,18 @@ end
 ---@return boolean
 ZomboidForge.IsZombieValidForNametag = function(zombie,zombiesOnCursor)
     -- retrieve zombie info
-    local isBehind = ZomboidForge.IsZombieBehind(zombie,player)
+    local isBehind = ZomboidForge.IsZombieBehind(zombie,client_player)
 
     -- test for each options
     -- 1. draw nametag if should always be on
     if ZFModOptions.AlwaysOn.value
     and (isClient() and SandboxVars.ZomboidForge.NametagsAlwaysOn or true)
-    and not isBehind and player:CanSee(zombie)
+    and not isBehind and client_player:CanSee(zombie)
     then
         return true
 
     -- 2. don't draw if player can't see zombie
-    elseif not player:CanSee(zombie)
+    elseif not client_player:CanSee(zombie)
     or isBehind
     then
         return false
@@ -343,7 +343,7 @@ ZomboidForge.IsZombieValidForNametag = function(zombie,zombiesOnCursor)
 
         -- verify the zombie has a target and the player is the target
         local target = zombie:getTarget()
-        if target and target == player then
+        if target and target == client_player then
             return true
         end
 

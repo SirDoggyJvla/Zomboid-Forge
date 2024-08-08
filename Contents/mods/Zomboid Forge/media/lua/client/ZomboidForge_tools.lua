@@ -25,9 +25,9 @@ local ZFModOptions = require "ZomboidForge_ClientOption"
 ZFModOptions = ZFModOptions.options_data
 
 -- localy initialize player
-local player = getPlayer()
-local function initTLOU_OnGameStart(playerIndex, player_init)
-	player = getPlayer()
+local client_player = getPlayer()
+local function initTLOU_OnGameStart(_, _)
+	client_player = getPlayer()
 end
 Events.OnCreatePlayer.Remove(initTLOU_OnGameStart)
 Events.OnCreatePlayer.Add(initTLOU_OnGameStart)
@@ -189,14 +189,14 @@ ZomboidForge.IsZombieBehind = function(zombie,character)
     local vector_P = character:getLookVector(Vector2.new())
     local angle = math.deg(vector_ZP:angleBetween(vector_P))
 
-    return angle > 90 and zombie:getDistanceSq(player) > 2.5
+    return angle > 90 and zombie:getDistanceSq(character) > 2.5
 end
 
 -- Checks if the `zombie` is on the cursor or not of local player.
 ---@param zombie IsoZombie
 ---@return boolean
 ZomboidForge.IsZombieOnCursor = function(zombie)
-    local aiming = player:isAiming()
+    local aiming = client_player:isAiming()
     if not aiming and not ZFModOptions.NoAimingNeeded.value then return false end
 
     -- get cursor coordinates
@@ -225,7 +225,7 @@ end
 ZomboidForge.GetZombiesOnCursor = function()
     local zombiesOnCursor = {}
 
-    local aiming = player:isAiming()
+    local aiming = client_player:isAiming()
     if not ZFModOptions.NoAimingNeeded.value and not aiming then return zombiesOnCursor end
 
     -- get cursor coordinates
@@ -247,7 +247,7 @@ ZomboidForge.GetZombiesOnCursor = function()
                         movingObjects = square:getMovingObjects()
                         for i = 0, movingObjects:size() -1 do
                             zombie = movingObjects:get(i)
-                            if zombie and zombie:isZombie() then
+                            if zombie and instanceof(zombie,"IsoZombie") then
                                 zombiesOnCursor[zombie] = true
                             end
                         end

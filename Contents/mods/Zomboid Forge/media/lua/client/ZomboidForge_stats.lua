@@ -25,9 +25,9 @@ local ZFModOptions = require "ZomboidForge_ClientOption"
 ZFModOptions = ZFModOptions.options_data
 
 -- localy initialize player
-local player = getPlayer()
-local function initTLOU_OnGameStart(playerIndex, player_init)
-	player = getPlayer()
+local client_player = getPlayer()
+local function initTLOU_OnGameStart(_, _)
+	client_player = getPlayer()
 end
 Events.OnCreatePlayer.Remove(initTLOU_OnGameStart)
 Events.OnCreatePlayer.Add(initTLOU_OnGameStart)
@@ -130,7 +130,7 @@ ZomboidForge.SetZombieData = function(zombie,ZType)
     local defaultHP = ZombieTable.HP or 0
     if not args.shouldAvoidDamage and defaultHP ~= 0 then
         -- makes sure zombies have high health amounts server side to not get stale
-        ZomboidForge.SyncZombieHealth(zombie,player,defaultHP)
+        ZomboidForge.SyncZombieHealth(zombie,client_player,defaultHP)
     end
 
     -- run custom data if any

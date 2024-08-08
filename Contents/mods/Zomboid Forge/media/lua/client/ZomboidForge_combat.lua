@@ -23,9 +23,9 @@ local ZFModOptions = require "ZomboidForge_ClientOption"
 ZFModOptions = ZFModOptions.options_data
 
 -- localy initialize player
-local player = getPlayer()
-local function initTLOU_OnGameStart(playerIndex, player_init)
-	player = getPlayer()
+local client_player = getPlayer()
+local function initTLOU_OnGameStart(_, _)
+	client_player = getPlayer()
 end
 Events.OnCreatePlayer.Remove(initTLOU_OnGameStart)
 Events.OnCreatePlayer.Add(initTLOU_OnGameStart)
@@ -318,7 +318,7 @@ ZomboidForge.DetermineHitReaction = function(attacker, zombie, handWeapon)
     -- if gun/ranged
     if attackerHitReaction == "Shot" then
         -- Roll crit hit
-        attacker:setCriticalHit(ZombRand(100) < player:calculateCritChance(zombie))
+        attacker:setCriticalHit(ZombRand(100) < client_player:calculateCritChance(zombie))
 
         -- default to ShotBelly and get hit direction
         hitReaction = "ShotBelly";
