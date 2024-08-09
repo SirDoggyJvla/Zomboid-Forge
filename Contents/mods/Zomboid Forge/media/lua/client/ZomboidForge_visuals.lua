@@ -213,9 +213,27 @@ ZomboidForge.ShowZombieNametag = function(zombie,trueID,ZombieTable)
         local ZType = ZomboidForge.GetZType(trueID)
         ZombieTable = ZomboidForge.ZTypes[ZType]
     end
-    local nonPersistentZData = ZomboidForge.GetNonPersistentZData(trueID,"nametag")
 
-    nonPersistentZData.ticks = ZomboidForge.GetNametagTickValue(ZombieTable)
+    local zombieModData = zombie:getModData()
+    ZomboidForge.TriggerNametag(zombieModData,ZombieTable)
+    zombieModData.ticks = ZomboidForge.GetNametagTickValue(ZombieTable)
+end
+
+ZomboidForge.TriggerNametag = function(zombieModData,ZombieTable)
+    zombieModData.nametag = TextDrawObject.new()
+    local nametag = zombieModData.nametag
+
+    zombieModData.color = ZombieTable.color or {255,255,255}
+    zombieModData.outline = ZombieTable.outline or {255,255,255}
+    zombieModData.VerticalPlacement = ZFModOptions.VerticalPlacement.value
+
+    -- apply string with font
+    local fonts = ZFModOptions.Fonts
+    nametag:ReadString(UIFont[fonts[fonts.value]], getText(ZombieTable.name), -1)
+
+    if ZFModOptions.Background.value then
+        nametag:setDrawBackground(true)
+    end
 end
 
 -- Updates the nametag of the `zombie` if valid.
@@ -269,21 +287,8 @@ ZomboidForge.DrawNameTag = function(zombie,ZombieTable,ticks)
     local nametag = zombieModData.nametag
     -- initialize nametag
     if not nametag then
-        -- create the nametag
-        zombieModData.nametag = TextDrawObject.new()
+        ZomboidForge.TriggerNametag(zombieModData,ZombieTable)
         nametag = zombieModData.nametag
-
-        zombieModData.color = ZombieTable.color or {255,255,255}
-        zombieModData.outline = ZombieTable.outline or {255,255,255}
-        zombieModData.VerticalPlacement = ZFModOptions.VerticalPlacement.value
-
-        -- apply string with font
-        local fonts = ZFModOptions.Fonts
-        nametag:ReadString(UIFont[fonts[fonts.value]], getText(ZombieTable.name), -1)
-
-        if ZFModOptions.Background.value then
-            nametag:setDrawBackground(true)
-        end
     end
 
     -- get initial position of zombie

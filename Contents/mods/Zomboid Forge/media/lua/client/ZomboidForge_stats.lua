@@ -123,6 +123,9 @@ ZomboidForge.SetZombieData = function(zombie,ZType)
     -- update zombie stats
     ZomboidForge.UpdateZombieStatsNonVerifiable(zombie,ZombieTable)
 
+    -- update stats that can be verified
+    ZomboidForge.UpdateZombieStatsVerifiable(zombie, ZombieTable)
+
     -- set zombie combat data
     local args = ZomboidForge.SetZombieCombatData(zombie, ZombieTable, ZType, trueID)
 

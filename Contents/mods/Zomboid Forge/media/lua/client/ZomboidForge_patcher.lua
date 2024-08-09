@@ -122,11 +122,15 @@ end
 --#region Patching Check Upstairs
 
 if getActivatedMods():contains("CheckUpstairs") then
-    require "ZomboidForge_visuals"
-    local CheckUpstairs = require "CheckUpstairs"
+    print("Replacing CheckUpstairs.ShowNametag to use ZomboidForge.ShowZombieNametag")
 
-    Events.OnZombieUpdate.Remove(CheckUpstairs.HandleNametag)
-    CheckUpstairs.HandleNametag = nil
+    require "ZomboidForge_visuals"
+    local CheckUpstairs = require "CheckUpstairs_module"
+    require "CheckUpstairs"
+    require "CheckUpstairs_events"
+
+    Events.OnZombieUpdate.Remove(CheckUpstairs.HandleVisuals)
+    CheckUpstairs.HandleVisuals = nil
 
     CheckUpstairs.ShowNametag = ZomboidForge.ShowZombieNametag
 end
