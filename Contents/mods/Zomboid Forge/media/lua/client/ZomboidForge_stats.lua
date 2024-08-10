@@ -394,11 +394,11 @@ end
 ---@return any
 ZomboidForge.ChoseInTable = function(tbl,current)
     if type(tbl) ~= "table" then
-        if tbl == current then
+        if current and tbl == current then
             return nil
-        else
-            return tbl
         end
+
+        return tbl
     end
 
     local key, value
@@ -414,8 +414,8 @@ ZomboidForge.ChoseInTable = function(tbl,current)
         end
     end
 
-    -- verify outfit is not already in
-    if ZomboidForge.CheckInTable(value,current) then return end
+    -- verify current is not in value
+    if current and ZomboidForge.CheckInTable(value,current) then return end
 
     -- If unique then return unique
     if key == "Unique" then return value end
@@ -517,6 +517,8 @@ end
 ---@param tag string
 ---@return nil|boolean
 ZomboidForge.GetBooleanResult = function(zombie, ZType, data, tag)
+    if not data then return end
+
     local type = type(data)
 
     local booleanResult = ZomboidForge.BooleanResult[type]

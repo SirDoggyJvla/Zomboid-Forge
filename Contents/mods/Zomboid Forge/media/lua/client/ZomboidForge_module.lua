@@ -150,6 +150,7 @@ ZomboidForge = {
     BooleanResult = {
         ["nil"] = function(data,zombie,ZType) return nil end,
         ["boolean"] = function(data,zombie,ZType) return data end,
+        ["number"] = function(data,zombie,ZType) return data end,
         ["function"] = function(data,zombie,ZType) return data(zombie,ZType) end,
         ["string"] = function(data,zombie,ZType) return ZomboidForge[data](zombie,ZType) end,
     },

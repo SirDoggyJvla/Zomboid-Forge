@@ -113,7 +113,20 @@ ZomboidForge.UpdateVisuals = function(zombie,ZombieTable,ZType)
             -- set new visuals
             locations = clothingVisuals.set
             if locations then
-                ZomboidForge.AddClothingVisuals(visuals,locations)
+                ZomboidForge.AddClothingVisuals(visuals,locations,gender)
+            end
+
+            local blood = clothingVisuals.bloody
+            local bloody = ZomboidForge.GetBooleanResult(zombie,ZType,blood,"remove "..tostring(blood))
+            bloody = type(bloody) == "boolean" and 1 or bloody
+            local dirt = clothingVisuals.dirty
+            local dirty = ZomboidForge.GetBooleanResult(zombie,ZType,dirt,"remove "..tostring(dirt))
+            dirty = type(dirty) == "boolean" and 1 or dirty
+            local hole = clothingVisuals.holes
+            hole = hole and 1 or false
+            local holes = ZomboidForge.GetBooleanResult(zombie,ZType,hole,"remove "..tostring(hole))
+            if blood or dirt then
+                ZomboidForge.ModifyClothingVisuals(zombie,ZType,visuals,bloody,dirty,holes)
             end
         end
     end
@@ -150,29 +163,80 @@ end
 --      `3: add visuals that need to get added`
 ---@param visuals       ItemVisuals
 ---@param locations     table      --Zombie Type ID
-ZomboidForge.AddClothingVisuals = function(visuals,locations)
+ZomboidForge.AddClothingVisuals = function(visuals,locations,gender)
     -- replace visuals that are at the same body locations and check for already set visuals
     local replace = {}
+    local ZData
+    local choice
+    local location
+    local item
     for i = visuals:size() - 1, 0, -1 do
-        local item = visuals:get(i)
-        local location = item:getScriptItem():getBodyLocation()
-        local getReplacement = locations[location]
-        if getReplacement then
-            if getReplacement ~= item then
-                item:setItemType(getReplacement)
-			    item:setClothingItemName(getReplacement)
+        item = visuals:get(i)
+        location = item:getScriptItem():getBodyLocation()
+
+        if locations[location] then
+            ZData = ZomboidForge.RetrieveDataFromTable(locations,location,gender)
+
+            -- if data for this ZTypes found then
+            if ZData then
+                -- get current and do a choice
+                local scriptItem = item:getScriptItem()
+                local current = scriptItem:getModuleName().."."..scriptItem:getName()
+
+                -- chose item if current not in ZData
+                choice = ZomboidForge.ChoseInTable(ZData,current)
+
+                -- verify data was found in the list to chose or current is not choice
+                if choice then
+                    item:setItemType(choice)
+                    item:setClothingItemName(choice)
+                end
+
+                -- location already exists so skip adding it
+                replace[location] = item
             end
-            replace[location] = item
         end
     end
 
     -- check for visuals that need to be added and add them
     for location,item in pairs(locations) do
         if not replace[location] then
+            ZData = ZomboidForge.RetrieveDataFromTable(locations,location,gender)
+            choice = ZomboidForge.ChoseInTable(ZData,item)
+
             local itemVisual = ItemVisual.new()
-            itemVisual:setItemType(item)
-            itemVisual:setClothingItemName(item)
+            itemVisual:setItemType(choice)
+            itemVisual:setClothingItemName(choice)
             visuals:add(itemVisual)
+        end
+    end
+end
+
+-- This function will add dirt or/and blood to clothing visuals from the `zombie` for each clothing `locations`.
+ZomboidForge.ModifyClothingVisuals = function(zombie,ZType,visuals,bloody,dirty,holes)
+    -- cycle backward to not have any fuck up in index whenever one is removed
+    for i = visuals:size() - 1, 0, -1 do
+        local item = visuals:get(i)
+        if item then
+            local scriptItem = item:getScriptItem()
+            if scriptItem then
+                local blood = scriptItem:getBloodClothingType()
+                if blood and blood:size() >= 1 then
+                    local coveredParts = BloodClothingType.getCoveredParts(blood)
+                    for j = 0, coveredParts:size() - 1 do
+                        local bloodPart = coveredParts:get(j)
+                        if bloody and item:getBlood(bloodPart) ~= bloody then
+                            item:setBlood(bloodPart,bloody)
+                        end
+                        if dirty and item:getDirt(bloodPart) ~= dirty then
+                            item:setDirt(bloodPart,dirty)
+                        end
+                        if holes and item:getHole(bloodPart) ~= holes then
+                            item:setHole(bloodPart)
+                        end
+                    end
+                end
+            end
         end
     end
 end

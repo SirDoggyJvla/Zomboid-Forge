@@ -79,7 +79,9 @@ ZomboidForge.isKeyTable = function(t)
 end
 
 ZomboidForge.IsZombieValid = function(zombie)
-    return not zombie:getVariableBoolean("Bandit")
+    return
+        not zombie:getVariableBoolean("Bandit")
+        and not zombie:isReanimatedPlayer()
 end
 
 -- Based on Chuck's work. Outputs the `trueID` of a `Zombie`.

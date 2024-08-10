@@ -119,6 +119,8 @@ end
 
 --#endregion
 
+
+
 --#region Patching Check Upstairs
 
 if getActivatedMods():contains("CheckUpstairs") then
@@ -136,6 +138,8 @@ if getActivatedMods():contains("CheckUpstairs") then
 end
 
 --#endregion
+
+
 
 --#region Patcher to ATRO
 
