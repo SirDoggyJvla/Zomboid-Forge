@@ -36,7 +36,7 @@ IGUI_EN = {
 	IGUI_ZomboidForge_UpdateRate30						= "110 ticks",
 	IGUI_ZomboidForge_UpdateRate31						= "115 ticks",
 	IGUI_ZomboidForge_UpdateRate32						= "120 ticks",
-	IGUI_ZomboidForge_UpdateRate_Tooltip				= "How many ticks it takes to update stats and visuals of every zombies. Increasing this number will make visuals update less often but performances will be better.",
+	IGUI_ZomboidForge_UpdateRate_Tooltip				= "How many ticks it takes to update stats and visuals of every zombies. Increasing this number will make visuals update less often but performances will be better. However the impact should stay small but perhaps if you tend to load a lot of zombies at once and have some lag, it could help a bit.",
 
 	/* Nametag */
     IGUI_ZomboidForge_NameTag							= "Show Nametags",

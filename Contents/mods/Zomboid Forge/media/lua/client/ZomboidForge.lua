@@ -66,32 +66,6 @@ ZomboidForge.OnGameStart = function()
 	end
 end
 
---- Initialize a zombie. `fullResetZ` will completely wipe the zombie data while
--- `rollZType` rolls a new ZType.
----@param zombie        IsoZombie
----@param fullResetZ    boolean
----@param rollZType     boolean
-ZomboidForge.ZombieInitiliaze = function(zombie,fullResetZ,rollZType)
-    -- get zombie trueID
-    local trueID = ZomboidForge.pID(zombie)
-
-    -- fully reset the stats of the zombie
-    if fullResetZ then
-        ZomboidForge.ResetZombieData(trueID)
-    end
-
-    -- get zombie data
-    local nonPersistentZData = ZomboidForge.GetNonPersistentZData(trueID)
-
-    -- attribute zombie type if not set by weighted random already
-    if rollZType then
-        local ZType = ZomboidForge.GetZType(trueID)
-        if not ZType or not ZomboidForge.ZTypes[ZType] then
-            nonPersistentZData.ZType = ZomboidForge.RollZType(trueID)
-        end
-    end
-end
-
 -- Handles the custom behaviors of the Zombies and triggers attack behavior.
 -- Steps of Zombie update:
 --
@@ -117,6 +91,10 @@ ZomboidForge.ZombieUpdate = function(zombie)
         for i = 1,#ZombieTable.customBehavior do
             ZomboidForge[ZombieTable.customBehavior[i]](zombie,ZType)
         end
+    end
+
+    if zombie:isOnFire() then
+        zombie:setHealth(zombie:getHealth() - zombie:getFireKillRate())
     end
 
     -- run onThump functions
@@ -147,8 +125,7 @@ ZomboidForge.ZombieUpdate = function(zombie)
     end
 end
 
-local zeroTick = 0
-local time_before_update = 10 -- seconds
+
 local tickAmount = 0
 -- Handles the updating of the stats of every zombies as well as initializing them. zombieList is initialized
 -- for the client and doesn't need to be changed after. The code goes through every zombie index and updates
@@ -164,24 +141,7 @@ ZomboidForge.OnTick = function(tick)
     if not zombieList then
         zombieList = client_player:getCell():getZombieList()
     end
-
     local zombieList_size = zombieList:size()
-    local tick_fraction = math.floor((time_before_update*60/zombieList_size)+0.5)
-
-
-    -- Update zombie stats
-    local zombieIndex = (tick - zeroTick)/tick_fraction
-    local zombie
-    if zombieIndex >= 0 and zombieIndex%1 == 0 then
-        if zombieList_size > zombieIndex then
-            zombie = zombieList:get(zombieIndex)
-            if ZomboidForge.IsZombieValid(zombie) then
-                ZomboidForge.SetZombieData(zombie,nil)
-            end
-        else
-            zeroTick = tick + 1
-        end
-    end
 
     -- Update things than need to be updated every ticks
     local showNametag = SandboxVars.ZomboidForge.Nametags and ZFModOptions.NameTag.value
@@ -191,9 +151,11 @@ ZomboidForge.OnTick = function(tick)
     end
 
     -- Define the fraction variable
-    local UpdateRate = math.min(ZomboidForge.UpdateRate[ZFModOptions.UpdateRate.value],zombieList_size) -- for example, this means 1/10th of the zombieList_size per tick
+    local UpdateRate = math.min(ZomboidForge.UpdateRate[ZFModOptions.UpdateRate.value],zombieList_size)
     tickAmount = tickAmount < UpdateRate - 1 and tickAmount + 1 or 0
 
+    -- update every zombies
+    local zombie
     for i = 0, zombieList_size - 1 do
         -- get zombie and verify it's valid
         zombie = zombieList:get(i)
@@ -210,14 +172,22 @@ ZomboidForge.OnTick = function(tick)
                     ZomboidForge.UpdateVisuals(zombie, ZombieTable, ZType)
 
                     -- update stats that can be verified
-                    ZomboidForge.UpdateZombieStatsVerifiable(zombie, ZombieTable)
+                    ZomboidForge.UpdateZombieStats(zombie, ZombieTable)
 
                     -- set combat data
                     ZomboidForge.SetZombieCombatData(zombie, ZombieTable, ZType, trueID)
+
+                    -- run custom data if any
+                    if ZombieTable.customData then
+                        for _, customData in ipairs(ZombieTable.customData) do
+                            ZomboidForge[customData](zombie,ZType)
+                        end
+                    end
                 end
             end
 
-            -- update nametag
+            -- update nametag, needs to be updated OnTick bcs if zombie
+            -- gets staggered it doesn't get updated with OnZombieUpdate
             if showNametag and ZombieTable.name then
                 local ticks = zombie:getModData().ticks
                 local valid = ZomboidForge.IsZombieValidForNametag(zombie, zombiesOnCursor)

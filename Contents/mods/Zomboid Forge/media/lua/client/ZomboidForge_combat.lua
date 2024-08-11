@@ -274,14 +274,15 @@ ZomboidForge.SetZombieCombatData = function(zombie, ZombieTable, ZType, trueID)
         zombie:setAvoidDamage(setAvoidDamage)
     end
 
-    -- initialize zombie custom damage
-    if isValidForCustomDamage then
-        local NonPersistentZData = ZomboidForge.GetNonPersistentZData(trueID)
-        local initHP = NonPersistentZData.initHP
-        if not initHP then
-            zombie:setHealth(defaultHP)
-            NonPersistentZData.initHP = true
+    -- initialize zombie custom health/damage
+    if isValidForCustomDamage and not zombie:getVariableBoolean("ZF_HealthSet") then
+        zombie:setHealth(defaultHP)
+        if zombie:getHealth() == defaultHP then
+            zombie:setVariable("ZF_HealthSet",true)
         end
+
+        -- makes sure zombies have high health amounts server side to not get stale
+        ZomboidForge.SyncZombieHealth(zombie,client_player,defaultHP)
     end
 
     return {

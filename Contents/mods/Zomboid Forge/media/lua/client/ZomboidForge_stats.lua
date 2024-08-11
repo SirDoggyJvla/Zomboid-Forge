@@ -99,51 +99,25 @@ end
 
 --#region Update zombie stats
 
---- Used to set the various data of a zombie, skipping the unneeded parts or already done. 
----@param zombie IsoZombie
----@param ZType string|nil
-ZomboidForge.SetZombieData = function(zombie,ZType)
-    local trueID = ZomboidForge.pID(zombie)
-    local nonPersistentZData = ZomboidForge.GetNonPersistentZData(trueID)
-
-    -- if no ZType given, access it
-    if not ZType then
-        if not nonPersistentZData.ZType then
-            ZomboidForge.ZombieInitiliaze(zombie,true,true)
-        end
-        ZType = nonPersistentZData.ZType
-    end
-
-    -- if still no ZType then skip again
-    if not ZType then return end
-
-    -- get zombie data
-    local ZombieTable = ZomboidForge.ZTypes[ZType]
+ZomboidForge.UpdateZombieStats = function(zombie,ZombieTable,forceUpdate)
+    -- skip if zombie was already set
+    if zombie:getVariableBoolean("ZF_StatsUpdated") then return end
 
     -- update zombie stats
     ZomboidForge.UpdateZombieStatsNonVerifiable(zombie,ZombieTable)
 
     -- update stats that can be verified
-    ZomboidForge.UpdateZombieStatsVerifiable(zombie, ZombieTable)
+    local shouldUpdate = ZomboidForge.UpdateZombieStatsVerifiable(zombie, ZombieTable)
 
-    -- set zombie combat data
-    local args = ZomboidForge.SetZombieCombatData(zombie, ZombieTable, ZType, trueID)
+    -- update stats if should update
+    if shouldUpdate or forceUpdate then
+        zombie:makeInactive(true)
+        zombie:makeInactive(false)
 
-    -- set zombie health
-    local defaultHP = ZombieTable.HP or 0
-    if not args.shouldAvoidDamage and defaultHP ~= 0 then
-        -- makes sure zombies have high health amounts server side to not get stale
-        ZomboidForge.SyncZombieHealth(zombie,client_player,defaultHP)
+    -- else set zombie has updated
+    else
+        zombie:setVariable("ZF_StatsUpdated",true)
     end
-
-    -- run custom data if any
-    if ZombieTable.customData then
-        for _, customData in ipairs(ZombieTable.customData) do
-            ZomboidForge[customData](zombie,ZType)
-        end
-    end
-
-    zombie:resetModel()
 end
 
 -- Updates stats of `zombie` which can be verified, making sure they don't get updated for nothing.
@@ -181,10 +155,7 @@ ZomboidForge.UpdateZombieStatsVerifiable = function(zombie,ZombieTable)
         end
     end
 
-    if shouldUpdate then
-        zombie:makeInactive(true)
-        zombie:makeInactive(false)
-    end
+    return shouldUpdate
 end
 
 -- Updates stats of `Zombie` which can't be verified. These need to be update not too often
@@ -196,8 +167,6 @@ ZomboidForge.UpdateZombieStatsNonVerifiable = function(zombie,ZombieTable)
     for stat_name,stat_data in pairs(ZomboidForge.Stats_nonClassField) do
         getSandboxOptions():set(stat_data.setSandboxOption,ZombieTable[stat_name])
     end
-    zombie:makeInactive(true)
-    zombie:makeInactive(false)
 end
 
 --#endregion

@@ -32,7 +32,7 @@ https://github.com/SirDoggyJvla/Zomboid-Forge-Template-Mod
 
 A zombie type within the framework is usually referenced as **ZType**. They are added within a table, linked to a key and is accessed by the framework using this key when a zombie type is attributed.
 
-Let's consider a first example of custom zombie being a very strong zombie with max stats and nothing else special about it. The key associated to this zombie will be `StrongZomboid`.
+Let's consider a first example of custom zombie being a very s r trong zombie with max stats and nothing else special about it. The key associated to this zombie will be `StrongZomboid`.
 
 Our ZType is added to the table `ZomboidForge.ZTypes` which can be accessed by importing the Zomboid Forge `module` within a Lua file in `media/lua/client/filename.lua` (in the template: `ZF_Template.lua`):
 ```lua

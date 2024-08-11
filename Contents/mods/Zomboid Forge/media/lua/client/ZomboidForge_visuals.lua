@@ -35,6 +35,8 @@ Events.OnCreatePlayer.Add(initTLOU_OnGameStart)
 --#region Update Zombie visuals
 
 ZomboidForge.UpdateVisuals = function(zombie,ZombieTable,ZType)
+    if zombie:getVariableBoolean("ZF_VisualsUpdated") then return end
+
     -- get zombie data
     local gender = zombie:isFemale() and "female" or "male"
     local ZData
@@ -116,6 +118,7 @@ ZomboidForge.UpdateVisuals = function(zombie,ZombieTable,ZType)
                 ZomboidForge.AddClothingVisuals(visuals,locations,gender)
             end
 
+            -- add dirt, blood or holes
             local blood = clothingVisuals.bloody
             local bloody = ZomboidForge.GetBooleanResult(zombie,ZType,blood,"remove "..tostring(blood))
             bloody = type(bloody) == "boolean" and 1 or bloody
@@ -125,11 +128,15 @@ ZomboidForge.UpdateVisuals = function(zombie,ZombieTable,ZType)
             local hole = clothingVisuals.holes
             hole = hole and 1 or false
             local holes = ZomboidForge.GetBooleanResult(zombie,ZType,hole,"remove "..tostring(hole))
-            if blood or dirt then
+            if bloody or dirty or holes then
                 ZomboidForge.ModifyClothingVisuals(zombie,ZType,visuals,bloody,dirty,holes)
             end
         end
     end
+
+    zombie:resetModel()
+
+    zombie:setVariable("ZF_VisualsUpdated",true)
 end
 
 -- This function will remove clothing visuals from the `zombie` for each clothing `locations`.
