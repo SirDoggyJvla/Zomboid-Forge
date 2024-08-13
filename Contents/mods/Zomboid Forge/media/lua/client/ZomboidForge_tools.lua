@@ -79,9 +79,30 @@ ZomboidForge.isKeyTable = function(t)
 end
 
 ZomboidForge.IsZombieValid = function(zombie)
-    return
-        not zombie:getVariableBoolean("Bandit")
-        and not zombie:isReanimatedPlayer()
+    local notValid
+    for k,funct in pairs(ZomboidForge.checkValid) do
+        if k then
+            if getActivatedMods():contains(k) then
+                notValid = funct(zombie)
+            end
+        else
+            notValid = funct(zombie)
+        end
+
+        if notValid then
+            return false
+        end
+    end
+
+    return true
+
+    -- if getActivatedMods():contains("Bandits") then
+    --     notValid = zombie:getVariableBoolean("Bandit")
+    -- else
+    --     local brain = BanditBrain.Get(zombie)
+    -- end
+
+    -- return notValid
 end
 
 -- Based on Chuck's work. Outputs the `trueID` of a `Zombie`.

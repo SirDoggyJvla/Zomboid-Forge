@@ -159,7 +159,7 @@ ZomboidForge.OnTick = function(tick)
     for i = 0, zombieList_size - 1 do
         -- get zombie and verify it's valid
         zombie = zombieList:get(i)
-        if ZomboidForge.IsZombieValid(zombie) then
+        if ZomboidForge.IsZombieValid(zombie) and zombie:isAlive() then
             -- get zombie data
             local trueID = ZomboidForge.pID(zombie)
             local ZType = ZomboidForge.GetZType(trueID)

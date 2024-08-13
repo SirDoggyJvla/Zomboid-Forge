@@ -35,8 +35,6 @@ Events.OnCreatePlayer.Add(initTLOU_OnGameStart)
 --#region Update Zombie visuals
 
 ZomboidForge.UpdateVisuals = function(zombie,ZombieTable,ZType)
-    -- if zombie:getVariableBoolean("ZF_VisualsUpdated") then return end
-
     -- get zombie data
     local gender = zombie:isFemale() and "female" or "male"
     local ZData
@@ -135,8 +133,6 @@ ZomboidForge.UpdateVisuals = function(zombie,ZombieTable,ZType)
     end
 
     zombie:resetModel()
-
-    -- zombie:setVariable("ZF_VisualsUpdated",true)
 end
 
 -- This function will remove clothing visuals from the `zombie` for each clothing `locations`.

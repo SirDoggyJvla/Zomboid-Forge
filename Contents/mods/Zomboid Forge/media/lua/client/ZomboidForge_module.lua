@@ -71,6 +71,14 @@ ZomboidForge = {
         120,
     },
 
+    checkValid = {
+        function(zombie) return zombie:isReanimatedPlayer() end,
+        ["Bandits"] = function(zombie)
+            local brain = BanditBrain.Get(zombie)
+            return zombie:getVariableBoolean("Bandit") or brain
+        end,
+    },
+
     -- used to set the various visuals/data of zombies
     ZombieData = {
         ["outfit"] = {

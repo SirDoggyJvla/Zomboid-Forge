@@ -101,7 +101,7 @@ end
 
 ZomboidForge.UpdateZombieStats = function(zombie,ZombieTable,forceUpdate)
     -- skip if zombie was already set
-    if zombie:getVariableBoolean("ZF_StatsUpdated") then return end
+    -- if zombie:getVariableBoolean("ZF_StatsUpdated") then return end
 
     -- update zombie stats
     ZomboidForge.UpdateZombieStatsNonVerifiable(zombie,ZombieTable)
@@ -116,7 +116,7 @@ ZomboidForge.UpdateZombieStats = function(zombie,ZombieTable,forceUpdate)
 
     -- else set zombie has updated
     else
-        zombie:setVariable("ZF_StatsUpdated",true)
+        -- zombie:setVariable("ZF_StatsUpdated",true)
     end
 end
 
@@ -410,11 +410,13 @@ ZomboidForge.CheckInTable = function(tbl,value)
     end
 
     -- check for value in non-weighted and weighted table
-    for _, v in ipairs(tbl) do
+    for i = 1, #tbl do
+        local v = tbl[i]
         if v == value or type(v) == "table" and v.name == value then
             return true
         end
     end
+
     return false
 end
 
@@ -460,7 +462,8 @@ end
 ZomboidForge.WeightedTable = function(tbl)
     -- get totalWeight
     local totalWeight = 0
-    for _,v in ipairs(tbl) do
+    for i = 1, #tbl do
+        local v = tbl[i]
         totalWeight = totalWeight + v.weight
     end
 
@@ -468,7 +471,8 @@ ZomboidForge.WeightedTable = function(tbl)
     local rand = ZombRand(1,totalWeight)
 
     -- test one by one each types and attribute if pass
-    for _,v in ipairs(tbl) do
+    for i = 1, #tbl do
+        local v = tbl[i]
         rand = rand - v.weight
         if rand <= 0 then
             return v.name
