@@ -101,7 +101,7 @@ end
 
 ZomboidForge.UpdateZombieStats = function(zombie,ZombieTable,forceUpdate)
     -- skip if zombie was already set
-    -- if zombie:getVariableBoolean("ZF_StatsUpdated") then return end
+    if zombie:getVariableBoolean("ZF_StatsUpdated") then return end
 
     -- update zombie stats
     ZomboidForge.UpdateZombieStatsNonVerifiable(zombie,ZombieTable)
@@ -116,7 +116,7 @@ ZomboidForge.UpdateZombieStats = function(zombie,ZombieTable,forceUpdate)
 
     -- else set zombie has updated
     else
-        -- zombie:setVariable("ZF_StatsUpdated",true)
+        zombie:setVariable("ZF_StatsUpdated",true)
     end
 end
 
