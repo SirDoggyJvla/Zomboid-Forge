@@ -134,7 +134,16 @@ end
 ZomboidForge.DamageZombie = function(attacker, zombie, handWeapon, damage,ZombieTable,trueID,ZType)
     -- get zombie info and apply combat data
     local defaultHP = ZombieTable.HP
-    local args = ZomboidForge.SetZombieCombatData(zombie, ZombieTable, ZType, trueID)
+    local args = ZomboidForge.SetZombieCombatData({
+        zombie = zombie,
+        ZombieTable = ZombieTable,
+        ZType = ZType,
+        onHit = {
+            attacker = attacker,
+            handWeapon = handWeapon,
+            damage = damage,
+        },
+    })
 
     -- skip if zombie is not valid for custom damage
     if args.isValidForCustomDamage then
@@ -240,22 +249,34 @@ end
 -- - `shouldIgnoreStagger`
 -- - `isValidForCustomDamage`
 -- - `setAvoidDamage`
----@param zombie IsoZombie
----@param ZombieTable table
----@param trueID int
+---@param data table
 ---@return table
-ZomboidForge.SetZombieCombatData = function(zombie, ZombieTable, ZType, trueID)
+ZomboidForge.SetZombieCombatData = function(data)
+    -- process inputs
+    local zombie = data.zombie
+    local ZType = data.ZType
+    if not ZType then
+        local trueID = data.trueID or ZomboidForge.pID(zombie)
+        ZType = ZomboidForge.GetZType(trueID)
+    end
+    local ZombieTable = data.ZombieTable or ZomboidForge.ZTypes[ZType]
+
+    local onHit = data.onHit
+
     -- get zombie data
-    local shouldIgnoreStagger = ZomboidForge.GetBooleanResult(zombie,ZType,ZombieTable.shouldIgnoreStagger,"shouldIgnoreStagger")
-    local shouldAvoidDamage = ZomboidForge.GetBooleanResult(zombie,ZType,ZombieTable.shouldAvoidDamage,"shouldAvoidDamage")
-    local onlyJawStab = ZomboidForge.GetBooleanResult(zombie,ZType,ZombieTable.onlyJawStab,"onlyJawStab")
+    local tag = table.newarray("shouldIgnoreStagger","shouldAvoidDamage","onlyJawStab")
+    local args = ZomboidForge.GetBooleanResult(zombie,ZType,tag,ZombieTable,onHit)
+    local shouldIgnoreStagger = args.shouldIgnoreStagger
+    local shouldAvoidDamage = args.shouldAvoidDamage
+    local onlyJawStab = args.onlyJawStab
+
     local defaultHP = ZombieTable.HP or 0
     local isValidForCustomDamage = not (shouldAvoidDamage == true) and defaultHP ~= 0
     local setAvoidDamage = shouldAvoidDamage or isValidForCustomDamage
 
     -- resetHitTime
     -- this makes sure damage doesn't ramp up
-    if ZomboidForge.GetBooleanResult(zombie,ZType,ZombieTable.resetHitTime,"resetHitTime") then
+    if ZomboidForge.GetBooleanResult(zombie,ZType,"resetHitTime",ZombieTable.resetHitTime) then
         zombie:setHitTime(0)
     end
 

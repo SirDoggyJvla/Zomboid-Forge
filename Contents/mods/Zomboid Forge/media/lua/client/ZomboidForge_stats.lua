@@ -482,23 +482,59 @@ ZomboidForge.WeightedTable = function(tbl)
     return ""
 end
 
--- Retrieves the tag within `ZombieTable` and runs the function if it is, or if just a boolean
--- then retrieve the boolean.
+-- Outputs the usage of `data` based on its type. Can also process multiple data if it's a table of data.
 ---@param zombie IsoZombie
 ---@param ZType string
 ---@param data any
----@param tag string
----@return nil|boolean
-ZomboidForge.GetBooleanResult = function(zombie, ZType, data, tag)
-    if not data then return end
+---@param tag any
+---@return nil|boolean|table
+ZomboidForge.GetBooleanResult = function(zombie,ZType,tag,data,bonusData)
+    if data == nil then return nil end
 
-    local type = type(data)
+    -- check type of data
+    local t = type(data)
 
-    local booleanResult = ZomboidForge.BooleanResult[type]
-    if booleanResult then
-        return booleanResult(data,zombie,ZType)
+    -- if table then multiple elements to check
+    if t == "table" then
+        local result = {}
+        local k
+        local v
+        local output
+        for i = 1,#tag do
+            k = tag[i]
+            v = data[k]
+            t = type(v)
+            if t == "nil" then
+                output = nil
+            elseif t == "boolean" or t == "number" then
+                output = v
+            elseif t == "string" then
+                output = ZomboidForge[v](ZType,zombie,bonusData)
+            elseif t == "function" then
+                output = v(ZType,zombie,bonusData)
+
+            -- improper usage of boolean result
+            else
+                print("ERORR: ZomboidForge, invalid "..k.." entry detected for "..ZType..". Make sure to have a proper entry.")
+                output = nil
+            end
+
+            result[k] = output
+        end
+
+        return result
+
+    -- unique type then
+    elseif t == "boolean" or t == "number" then
+        return data
+    elseif t == "string" then
+        return ZomboidForge[data](ZType,zombie,bonusData)
+    elseif t == "function" then
+        return data(ZType,zombie,bonusData)
+
+    -- improper usage of boolean result
     else
-        print("ERORR: ZomboidForge, invalid "..tag.." entry detected for "..ZType..". Make sure to have either a boolean, a function or a key of ZomboidForge linked to a function.")
+        print("ERORR: ZomboidForge, invalid "..tag.." entry detected for "..ZType..". Make sure to have a proper entry.")
         return nil
     end
 end

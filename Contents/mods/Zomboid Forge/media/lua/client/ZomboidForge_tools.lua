@@ -95,14 +95,6 @@ ZomboidForge.IsZombieValid = function(zombie)
     end
 
     return true
-
-    -- if getActivatedMods():contains("Bandits") then
-    --     notValid = zombie:getVariableBoolean("Bandit")
-    -- else
-    --     local brain = BanditBrain.Get(zombie)
-    -- end
-
-    -- return notValid
 end
 
 -- Based on Chuck's work. Outputs the `trueID` of a `Zombie`.

@@ -175,7 +175,11 @@ ZomboidForge.OnTick = function(tick)
                     ZomboidForge.UpdateZombieStats(zombie, ZombieTable)
 
                     -- set combat data
-                    ZomboidForge.SetZombieCombatData(zombie, ZombieTable, ZType, trueID)
+                    ZomboidForge.SetZombieCombatData({
+                        zombie = zombie,
+                        ZombieTable = ZombieTable,
+                        ZType = ZType,
+                    })
 
                     -- run custom data if any
                     if ZombieTable.customData then

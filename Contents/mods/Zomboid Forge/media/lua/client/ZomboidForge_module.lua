@@ -155,14 +155,6 @@ ZomboidForge = {
         },
     },
 
-    BooleanResult = {
-        ["nil"] = function(data,zombie,ZType) return nil end,
-        ["boolean"] = function(data,zombie,ZType) return data end,
-        ["number"] = function(data,zombie,ZType) return data end,
-        ["function"] = function(data,zombie,ZType) return data(zombie,ZType) end,
-        ["string"] = function(data,zombie,ZType) return ZomboidForge[data](zombie,ZType) end,
-    },
-
     --- Stats for each zombies. `key` of `Stats` are the variable to 
     -- define with `key`'s `value` from `returnValue`. The `value` of `returnValue` 
     -- associated to a `key` is the compared one with what the game returns 

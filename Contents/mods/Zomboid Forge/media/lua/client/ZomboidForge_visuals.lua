@@ -90,7 +90,7 @@ ZomboidForge.UpdateVisuals = function(zombie,ZombieTable,ZType)
     end
 
     -- remove bandages
-    if ZomboidForge.GetBooleanResult(zombie,ZType,ZombieTable.removeBandages,"removeBandages") then
+    if ZomboidForge.GetBooleanResult(zombie,ZType,"removeBandages",ZombieTable.removeBandages) then
         -- Remove bandages
         local bodyVisuals = zombie:getHumanVisual():getBodyVisuals()
         if bodyVisuals and bodyVisuals:size() > 0 then
@@ -118,14 +118,14 @@ ZomboidForge.UpdateVisuals = function(zombie,ZombieTable,ZType)
 
             -- add dirt, blood or holes
             local blood = clothingVisuals.bloody
-            local bloody = ZomboidForge.GetBooleanResult(zombie,ZType,blood,"remove "..tostring(blood))
+            local bloody = ZomboidForge.GetBooleanResult(zombie,ZType,"blood",blood)
             bloody = type(bloody) == "boolean" and 1 or bloody
             local dirt = clothingVisuals.dirty
-            local dirty = ZomboidForge.GetBooleanResult(zombie,ZType,dirt,"remove "..tostring(dirt))
+            local dirty = ZomboidForge.GetBooleanResult(zombie,ZType,"dirt",dirt)
             dirty = type(dirty) == "boolean" and 1 or dirty
             local hole = clothingVisuals.holes
             hole = hole and 1 or false
-            local holes = ZomboidForge.GetBooleanResult(zombie,ZType,hole,"remove "..tostring(hole))
+            local holes = ZomboidForge.GetBooleanResult(zombie,ZType,"hole",hole)
             if bloody or dirty or holes then
                 ZomboidForge.ModifyClothingVisuals(zombie,ZType,visuals,bloody,dirty,holes)
             end
@@ -148,7 +148,7 @@ ZomboidForge.RemoveClothingVisuals = function(zombie,ZType,visuals,locations)
                 local location = scriptItem:getBodyLocation()
                 local location_remove = locations[location]
                 if location_remove then
-                    local getRemove = ZomboidForge.GetBooleanResult(zombie,ZType,location_remove,"remove "..tostring(location_remove))
+                    local getRemove = ZomboidForge.GetBooleanResult(zombie,ZType,"remove "..tostring(location_remove),location_remove)
                     if getRemove then
                         visuals:remove(item)
                     end
