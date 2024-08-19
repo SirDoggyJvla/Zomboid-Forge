@@ -93,10 +93,6 @@ ZomboidForge.ZombieUpdate = function(zombie)
         end
     end
 
-    if zombie:isOnFire() then
-        zombie:setHealth(zombie:getHealth() - zombie:getFireKillRate())
-    end
-
     -- run onThump functions
     if ZombieTable.onThump then
         -- run code if zombie has thumping target
@@ -120,8 +116,14 @@ ZomboidForge.ZombieUpdate = function(zombie)
     end
 
     -- run zombie attack functions
-    if zombie:isAttacking() then
-        ZomboidForge.ZombieAgro(zombie,ZType)
+    local target = zombie:getTarget()
+    if target then
+        ZomboidForge.ZombieAgro({
+            zombie = zombie,
+            target = target,
+            ZType = ZType,
+            ZombieTable = ZombieTable,
+        })
     end
 end
 
@@ -214,7 +216,32 @@ ZomboidForge.OnHit = function(attacker, victim, handWeapon, damage)
     if not attacker:isZombie() and victim:isZombie() then
         if not ZomboidForge.IsZombieValid(victim) then return end
 
-        ZomboidForge.PlayerAttacksZombie(attacker, victim, handWeapon, damage)
+        -- get zombie data
+        local trueID = ZomboidForge.pID(victim)
+        local ZType = ZomboidForge.GetZType(trueID)
+        local ZombieTable = ZomboidForge.ZTypes[ZType]
+
+        -- show nametag
+        if ZFModOptions.WhenZombieIsAttacking.value then
+            ZomboidForge.ShowZombieNametag(victim,trueID)
+        end
+
+        -- custom on hit functions
+        if ZombieTable.onHit_player2zombie then
+            for i=1,#ZombieTable.onHit_player2zombie do
+                ZomboidForge[ZombieTable.onHit_player2zombie[i]](ZType,attacker, victim, handWeapon, damage)
+            end
+        end
+
+        -- Handle damage to zombie
+        ZomboidForge.DamageZombie({
+            attacker = attacker,
+            zombie = victim,
+            handWeapon = handWeapon,
+            damage = damage,
+            ZombieTable = ZombieTable,
+            ZType = ZType
+        })
     end
 end
 

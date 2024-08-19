@@ -103,7 +103,7 @@ ZomboidForge.Commands.ZombieHandler.KillZombie = function(args)
     ZomboidForge.KillZombie(zombie,attacker)
 end
 
--- Sends a request to server to update every clients animationVariable for every clients.
+-- Sends a request to server to update every clients zombie emitters.
 ---@param args          table
 ZomboidForge.Commands.ZombieHandler.RemoveEmitters = function(args)
     if player == getPlayerByOnlineID(args.id) then return end
@@ -113,5 +113,17 @@ ZomboidForge.Commands.ZombieHandler.RemoveEmitters = function(args)
         if not ZomboidForge.IsZombieValid(zombie) then return end
 
         zombie:getEmitter():stopAll()
+    end
+end
+
+-- Sends a request to server to update every clients zombies to path towards sound.
+---@param args          table
+ZomboidForge.Commands.ZombieHandler.PathToSound = function(args)
+    -- get zombie info
+    local zombie = ZomboidForge.getZombieByOnlineID(args.zombie)
+    if zombie then
+        if not ZomboidForge.IsZombieValid(zombie) then return end
+
+        zombie:pathToSound(args.x, args.y, args.z)
     end
 end

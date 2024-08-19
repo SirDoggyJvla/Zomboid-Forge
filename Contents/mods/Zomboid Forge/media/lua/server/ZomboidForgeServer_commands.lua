@@ -53,6 +53,14 @@ ZomboidForge_server.Commands.ZombieHandler.KillZombie = function(player,args)
 	)
 end
 
+ZomboidForge_server.Commands.ZombieHandler.PathToSound = function(player,args)
+	sendServerCommand(
+		"ZombieHandler",
+		"PathToSound",
+		args
+	)
+end
+
 ZomboidForge_server.Commands.ZombieHandler.UpdateHealth = function(player,args)
 	-- only update if call from attacker
 	local attacker = getPlayerByOnlineID(args.attackerOnlineID)
@@ -65,10 +73,14 @@ ZomboidForge_server.Commands.ZombieHandler.UpdateHealth = function(player,args)
 
 	-- set zombie health
 	zombie:setHealth(args.defaultHP)
+    zombie:setAttackedBy(attacker)
 
 	-- kill zombie if zombie should die
 	if args.defaultHP <= 0 then
 		ZomboidForge_server.Commands.ZombieHandler.KillZombie(attacker,{zombieOnlineID = zombieID})
+	
+		zombie:changeState(ZombieOnGroundState.instance())
+		zombie:becomeCorpse()
 	end
 end
 

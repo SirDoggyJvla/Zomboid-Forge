@@ -24,6 +24,9 @@ local ZFModData = ModData.getOrCreate("ZomboidForge")
 local ZFModOptions = require "ZomboidForge_ClientOption"
 ZFModOptions = ZFModOptions.options_data
 
+--- import GameTime localy for performance reasons
+local gametime = GameTime:getInstance()
+
 -- localy initialize player
 local client_player = getPlayer()
 local function initTLOU_OnGameStart(_, _)
@@ -76,6 +79,74 @@ end
 ZomboidForge.isKeyTable = function(t)
     -- A table is a key table if it's not an array
     return not ZomboidForge.isArray(t)
+end
+
+
+local A1, A2 = 727595, 798405  -- 5^17=D20*A1+A2
+local D20, D40 = 1048576, 1099511627776  -- 2^20, 2^40
+-- Outputs a seeded random for this specific `zombie` synced for each clients.
+--
+-- Values can be floats or integers. Giving `uniqueRandom` as a number will allow the use of proper random every tick. However this random
+-- might not be synced between each clients, as it requires some improvements.
+--
+-- `data` as `table`, `val1` and `val2` ignored:
+-- - `zombie` IsoZombie
+-- - `trueID` int
+-- - `max` number
+-- - `min` number [opt]
+-- - `uniqueRandom` number [opt]
+--
+-- `data` as IsoZombie or `trueID`:
+-- - `val2` is nil, then `val1` is `max`
+-- - `val1` and `val2` given, respectively `min` and `max`
+---@param data table|IsoZombie|number
+---@param val1 number|nil
+---@param val2 number|nil
+---@return number
+ZomboidForge.ZombSeedRand = function(data,val1,val2)
+    local trueID
+    local uniqueRandom
+    local min
+    local max
+
+    -- retrieve values
+    if type(data) == "table" then
+        trueID = data.trueID or ZomboidForge.pID(data.zombie)
+        uniqueRandom = data.uniqueRandom
+        min = data.min or 0
+        max = data.max
+    else
+        if instanceof(data,"IsoZombie") then
+            ---@cast data IsoZombie
+
+            trueID = ZomboidForge.pID(data)
+        else
+            trueID = data
+        end
+
+        min = val2 and val1 or 0
+        max = val2 and val2 or val1
+    end
+
+    -- math.abs
+    if trueID < 0 then
+        trueID = -trueID
+    end
+
+    -- retrieve randomness value
+    if uniqueRandom then
+        -- Get the world age in hours and mix it
+        local worldAge = gametime:getWorldAgeHours()
+        local addedValue = (worldAge - math.floor(worldAge)) * 1000000
+
+        trueID = trueID + addedValue*uniqueRandom
+    end
+
+    -- calculate seeded random
+    local V = (trueID*A2 + A1) % D20
+    V = (V*D20 + A2) % D40
+    V = (V/D40) * (max - min)
+    return (V - V%1) + 1 + min
 end
 
 ZomboidForge.IsZombieValid = function(zombie)

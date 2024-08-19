@@ -32,106 +32,80 @@ Events.OnCreatePlayer.Add(initTLOU_OnGameStart)
 
 --#region Handle damage system
 
---- `Zombie` has agro on an `IsoGameCharacter`. 
--- 
--- Trigger `zombieAgro` of `Zombie` depending on `ZType`.
----@param zombie IsoZombie
----@param ZType string
-ZomboidForge.ZombieAgro = function(zombie,ZType)
-    -- check if zombie has a target
-    local target = zombie:getTarget()
-    if target then
-        -- get zombie data
-        local ZombieTable = ZomboidForge.ZTypes[ZType]
+-- `zombie` has agro on an `IsoGameCharacter`. 
+-- Trigger `zombieAgroCharacter` of `zombie` on `target`.
+-- Triggers `onHit_zombie2player` if `zombie` attacks `target`
+--
+-- `data`:
+-- - `zombie` IsoZombie
+-- - `target` IsoCharacter
+-- - `ZombieTable` table [opt]
+-- - `trueID` int [opt]
+-- - `ZType` string [opt]
+---@param data table
+ZomboidForge.ZombieAgro = function(data)
+    -- get attack data
+    local zombie = data.zombie
+    local target = data.target
 
-        -- if target is a character
-        if target:isCharacter() and not target:isZombie() then
-            ---@cast target IsoGameCharacter
+    -- if target is a character
+    if target:isCharacter() and not target:isZombie() then
+        ---@cast target IsoGameCharacter
 
-            -- trigger custom agro behavior
-            if ZombieTable.zombieAgroCharacter then
-                for i=1,#ZombieTable.zombieAgroCharacter do
-                    ZomboidForge[ZombieTable.zombieAgroCharacter[i]](ZType,target,zombie)
+        -- get zombie info
+        local ZType = data.ZType
+        if not ZType then
+            local trueID = data.trueID or ZomboidForge.pID(zombie)
+            ZType = ZomboidForge.GetZType(trueID)
+        end
+        local ZombieTable = data.ZombieTable or ZomboidForge.ZTypes[ZType]
+
+        -- trigger custom agro behavior
+        if ZombieTable.zombieAgroCharacter then
+            for i=1,#ZombieTable.zombieAgroCharacter do
+                ZomboidForge[ZombieTable.zombieAgroCharacter[i]](ZType,target,zombie)
+            end
+        end
+
+        -- trigger zombie hitting player behavior
+        if zombie:isAttacking() and target:hasHitReaction() then
+            -- custom on hit functions
+            if ZombieTable.onHit_zombie2player then
+                for i=1,#ZombieTable.onHit_zombie2player do
+                    ZomboidForge[ZombieTable.onHit_zombie2player[i]](ZType,zombie,target)
                 end
             end
-
-            -- trigger zombie hitting player behavior
-            if target:hasHitReaction() then
-                ZomboidForge.ZombieAttacksPlayer(zombie, ZType, ZombieTable, target, nil)
-            end
-
-        -- if target is a vehicle
-        -- elseif instanceof(target,"BaseVehicle") then
-        --     if ZombieTable.zombieAgroVehicle then
-        --         for i=1,#ZombieTable.zombieAgroVehicle do
-        --             ZomboidForge[ZombieTable.zombieAgroVehicle[i]](ZType,target,zombie)
-        --         end
-        --     end
         end
     end
 end
 
--- `zombie` attacking `player`. Triggers custom attack reaction behavior of ZType.
----@param zombie IsoZombie
----@param ZType string
----@param ZombieTable table
----@param victim IsoPlayer
----@param handWeapon HandWeapon
-ZomboidForge.ZombieAttacksPlayer = function(zombie, ZType, ZombieTable, victim, handWeapon)
-    -- get zombie data
+
+-- Handles `damage` to `zombie` from `attacker`.
+--
+-- `data`:
+-- - `attacker` IsoPlayer
+-- - `zombie` IsoZombie
+-- - `handWeapon` HandWeapon
+-- - `damage` float
+-- - `ZombieTable` table [opt]
+-- - `trueID` int [opt]
+-- - `ZType` string [opt]
+---@param data table
+ZomboidForge.DamageZombie = function(data)
+    -- get attack data
+    local attacker = data.attacker
+    local zombie = data.zombie
+    local handWeapon = data.handWeapon
+    local damage = data.damage
+
+    -- get zombie info
+    local ZType = data.ZType
     if not ZType then
-        local trueID = ZomboidForge.pID(zombie)
+        local trueID = data.trueID or ZomboidForge.pID(zombie)
         ZType = ZomboidForge.GetZType(trueID)
     end
-    if not ZombieTable then
-        ZombieTable = ZomboidForge.ZTypes[ZType]
-    end
+    local ZombieTable = data.ZombieTable or ZomboidForge.ZTypes[ZType]
 
-    -- custom on hit functions
-    if ZombieTable.onHit_zombie2player then
-        for i=1,#ZombieTable.onHit_zombie2player do
-            ZomboidForge[ZombieTable.onHit_zombie2player[i]](ZType,zombie, victim, handWeapon)
-        end
-    end
-end
-
--- `player` attacking `zombie`. Triggers custom attack reaction behavior of ZType.
--- Also handles damage taken by zombie if he has any custom damage or HP.
----@param attacker IsoPlayer
----@param zombie IsoZombie
----@param handWeapon HandWeapon
----@param damage float
-ZomboidForge.PlayerAttacksZombie = function(attacker, zombie, handWeapon, damage)
-    -- get zombie data
-    local trueID = ZomboidForge.pID(zombie)
-    local ZType = ZomboidForge.GetZType(trueID)
-    local ZombieTable = ZomboidForge.ZTypes[ZType]
-
-    -- show nametag
-    if ZFModOptions.WhenZombieIsAttacking.value then
-        ZomboidForge.ShowZombieNametag(zombie,trueID)
-    end
-
-    -- custom on hit functions
-    if ZombieTable.onHit_player2zombie then
-        for i=1,#ZombieTable.onHit_player2zombie do
-            ZomboidForge[ZombieTable.onHit_player2zombie[i]](ZType,attacker, zombie, handWeapon, damage)
-        end
-    end
-
-    -- Handle damage to zombie
-    ZomboidForge.DamageZombie(attacker, zombie, handWeapon, damage,ZombieTable,trueID,ZType)
-end
-
--- Handles damage to `zombie` from `attacker`.
----@param attacker IsoPlayer
----@param zombie IsoZombie
----@param handWeapon HandWeapon
----@param damage float
----@param ZombieTable table
----@param trueID int
----@param ZType string
-ZomboidForge.DamageZombie = function(attacker, zombie, handWeapon, damage,ZombieTable,trueID,ZType)
     -- get zombie info and apply combat data
     local defaultHP = ZombieTable.HP
     local args = ZomboidForge.SetZombieCombatData({
@@ -264,20 +238,33 @@ ZomboidForge.SetZombieCombatData = function(data)
     local onHit = data.onHit
 
     -- get zombie data
-    local tag = table.newarray("shouldIgnoreStagger","shouldAvoidDamage","onlyJawStab")
+    local tag = table.newarray("shouldIgnoreStagger","shouldAvoidDamage","onlyJawStab","resetHitTime","fireKillRate","noTeeth")
     local args = ZomboidForge.GetBooleanResult(zombie,ZType,tag,ZombieTable,onHit)
     local shouldIgnoreStagger = args.shouldIgnoreStagger
     local shouldAvoidDamage = args.shouldAvoidDamage
     local onlyJawStab = args.onlyJawStab
+    local resetHitTime = args.resetHitTime
+    local fireKillRate = args.fireKillRate
+    local noTeeth = args.noTeeth
 
     local defaultHP = ZombieTable.HP or 0
     local isValidForCustomDamage = not (shouldAvoidDamage == true) and defaultHP ~= 0
     local setAvoidDamage = shouldAvoidDamage or isValidForCustomDamage
 
     -- resetHitTime
-    -- this makes sure damage doesn't ramp up
-    if ZomboidForge.GetBooleanResult(zombie,ZType,"resetHitTime",ZombieTable.resetHitTime) then
-        zombie:setHitTime(0)
+    -- this sets the damage ramp up
+    if resetHitTime ~= nil then
+        if type(resetHitTime) == "int" then
+            zombie:setHitTime(resetHitTime)
+        else
+            zombie:setHitTime(0)
+        end
+    end
+
+    -- fireKillRate
+    -- damage by fire
+    if fireKillRate and zombie:getFireKillRate() ~= fireKillRate then
+        zombie:setFireKillRate(fireKillRate)
     end
 
     -- check if zombie should ignore stagger
@@ -293,6 +280,11 @@ ZomboidForge.SetZombieCombatData = function(data)
     -- check if zombie should avoid damage
     if setAvoidDamage ~= nil and zombie:avoidDamage() ~= setAvoidDamage then
         zombie:setAvoidDamage(setAvoidDamage)
+    end
+
+    -- check if zombie should have no teeth (can't bite)
+    if noTeeth ~= nil and zombie:isNoTeeth() ~= noTeeth then
+        zombie:setNoTeeth(noTeeth)
     end
 
     -- initialize zombie custom health/damage

@@ -168,14 +168,11 @@ function Advanced_trajectory.checkontick()
             lb[3] = lb[3] + timemultiplier
             lb[4] = lb[4] - timemultiplier
             lb[2]:AddBatchedDraw(lb[3], lb[4], true)
-
-            -- print(Advanced_trajectory.damagedisplayer[3] - Advanced_trajectory.damagedisplayer[5]) 
         end
     end
 
     local tablenow = Advanced_trajectory.table
-    -- print(#tablenow)
-    -- print(getGameTime():getMultiplier())
+
 
     for kt, vt in pairs(tablenow) do
 
@@ -196,17 +193,12 @@ function Advanced_trajectory.checkontick()
        if vt[2] then
             -- bullet square, dirc, offset, offset, nonsfx
             if Advanced_trajectory.checkiswallordoor(vt[2],vt[5],vt[4],vt[20],vt["nonsfx"]) and not vt[15] then
-                --print("***********Bullet collided with wall.************")
-                --print("Wallcarmouse: ", vt["wallcarmouse"])
-                --print("Wallcarzombie: ", vt["wallcarzombie"])
-                --print("Cell: ", vt[4][1],", ",vt[4][2],", ",vt[4][3])
                 if  vt[9] =="Grenade" or vt["wallcarmouse"] or vt["wallcarzombie"]then
 
                     if vt[22][2] > 0 then
                         Advanced_trajectory.boomsfx(vt[2],vt["boomsfx"][1],vt["boomsfx"][2],vt["boomsfx"][3])
                     end
                     if not vt["nonsfx"]  then
-                        -- print("Boom")
                         Advanced_trajectory.Boom(vt[2],vt[22])
                     end
                 end
@@ -233,17 +225,14 @@ function Advanced_trajectory.checkontick()
             -- NOT SURE WHAT WEAPON THIS CHECKS SINCE THERE ARE NO FLAMETHROWERS IN VANILLA
             if vt[9] == "flamethrower" then
 
-                -- print(vt[17])
                 if vt[17] >3 then
                     vt[17] = 0
                     vt[21]=vt[21]+1
                     vt[4] = Advanced_trajectory.twotable(vt[20])
                 end
-                -- print(vt[21])
                 if vt[21] >4 then
                     Advanced_trajectory.itemremove(vt[1]) 
                     tablenow[kt]=nil
-                    --print("Broke bullet FLAMETHROWER")
                     break
                 end
 
@@ -266,8 +255,6 @@ function Advanced_trajectory.checkontick()
                 tablenow[kt]=nil
 
                 determineArrowSpawn(vt[2], false)
-
-                --print("Broke bullet GRENADE")
                 break
             end
 
@@ -295,7 +282,6 @@ function Advanced_trajectory.checkontick()
                     end
                     Advanced_trajectory.itemremove(vt[1])
                     tablenow[kt]=nil
-                    --print("Broke bullet PARABOLA")
                     break
                 end
 
@@ -319,8 +305,6 @@ function Advanced_trajectory.checkontick()
                 end
 
                 angleammooff = angleammooff / 30
-                --print('angleammo: ', angleammo)
-                --print('angleammooff: ', angleammooff)
 
                 local admindel = vt["animlevels"] - math.floor(vt[4][3])
                 local shootlevel =  vt[4][3] + admindel
@@ -328,9 +312,6 @@ function Advanced_trajectory.checkontick()
                 if  vt["isparabola"] then
                     shootlevel  = vt[4][3]
                 end
-
-                --print('admindel (for x and y): ', admindel)
-                --print('shootlevel (z): ', shootlevel)
 
                 local saywhat = ""
 
@@ -493,7 +474,6 @@ function Advanced_trajectory.checkontick()
                     -- break if iscantthrough and penetration is 0
                     if not vt[11] and (vt["ThroNumber"] <= 0  )then
                         tablenow[kt]=nil
-                        --print("Broke bullet PENETRATION")
                         break
                     end
                 end

@@ -45,19 +45,22 @@ Events.OnInitGlobalModData.Add(initModData)
 local A1, A2 = 727595, 798405  -- 5^17=D20*A1+A2
 local D20, D40 = 1048576, 1099511627776  -- 2^20, 2^40
 -- Seeded random used in determining the `ZType` of a zombie.
+--
+-- Replaced by `ZomboidForge.ZombSeedRand`
 ---@param trueID        int
-ZomboidForge.seededRand = function(trueID)
+ZomboidForge.seededRand = function(trueID,max)
     trueID = math.abs(trueID)
     local V = (trueID*A2 + A1) % D20
     V = (V*D20 + A2) % D40
-    return math.floor((V/D40) * ZomboidForge.TotalChance) + 1
+    V = (V/D40) * max
+    return math.floor(V) + 1
 end
 
 --- Rolls the `ZType` of a zombie.
 ---@param trueID        int
 ZomboidForge.RollZType = function(trueID)
     -- chose a seeded random number based on max total weight
-    local rand = ZomboidForge.seededRand(trueID)
+    local rand = ZomboidForge.ZombSeedRand({trueID = trueID, max = ZomboidForge.TotalChance})
 
     -- test one by one each types and attribute if pass
     for ZType,ZombieTable in pairs(ZomboidForge.ZTypes) do
@@ -100,9 +103,6 @@ end
 --#region Update zombie stats
 
 ZomboidForge.UpdateZombieStats = function(zombie,ZombieTable,forceUpdate)
-    -- skip if zombie was already set
-    if zombie:getVariableBoolean("ZF_StatsUpdated") then return end
-
     -- update zombie stats
     ZomboidForge.UpdateZombieStatsNonVerifiable(zombie,ZombieTable)
 
@@ -113,10 +113,6 @@ ZomboidForge.UpdateZombieStats = function(zombie,ZombieTable,forceUpdate)
     if shouldUpdate or forceUpdate then
         zombie:makeInactive(true)
         zombie:makeInactive(false)
-
-    -- else set zombie has updated
-    else
-        zombie:setVariable("ZF_StatsUpdated",true)
     end
 end
 
