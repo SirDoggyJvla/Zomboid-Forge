@@ -251,13 +251,26 @@ end
 -- Permits access to the value associated to the option `ZFModOptions.Ticks`.
 -- Used in `ZomboidForge.GetNametagTickValue`.
 local TicksOption = {
-    10,
-    50,
     100,
     200,
+    300,
+    400,
     500,
+    600,
+    700,
+    800,
+    900,
     1000,
-    10000,
+    1100,
+    1200,
+    1300,
+    1400,
+    1500,
+    1600,
+    1700,
+    1800,
+    1900,
+    2000,
 }
 
 -- Returns the `ticks` value. This value can be forced via a zombie type, else it's based
