@@ -117,7 +117,6 @@ ZomboidForge.DamageZombie = function(data)
     local ZombieTable = data.ZombieTable or ZomboidForge.ZTypes[ZType]
 
     -- get zombie info and apply combat data
-    local defaultHP = ZombieTable.HP
     local args = ZomboidForge.SetZombieCombatData({
         zombie = zombie,
         ZombieTable = ZombieTable,
@@ -132,7 +131,7 @@ ZomboidForge.DamageZombie = function(data)
     -- skip if zombie is not valid for custom damage
     if args.isValidForCustomDamage then
         -- makes sure zombies have high health amounts server side to not get stale
-        ZomboidForge.SyncZombieHealth(zombie,attacker,defaultHP)
+        ZomboidForge.SyncZombieHealth(zombie,attacker,10)
 
         -- checks if player is handpushing zombie
         -- this is done by checking the weapon are hands and that damage is close to 0
@@ -147,7 +146,14 @@ ZomboidForge.DamageZombie = function(data)
         elseif not handPush then
             -- apply custom damage if any
             if ZombieTable.customDamage then
-                damage = ZomboidForge[ZombieTable.customDamage](ZType,attacker, zombie, handWeapon, damage)
+                damage = ZomboidForge[ZombieTable.customDamage]({
+                    ZType = ZType,
+                    ZombieTable = ZombieTable,
+                    attacker = attacker,
+                    zombie = zombie,
+                    handWeapon = handWeapon,
+                    damage = damage,
+                })
             end
 
             -- get HP and apply damage
@@ -299,13 +305,13 @@ ZomboidForge.SetZombieCombatData = function(data)
 
     -- initialize zombie custom health/damage
     if isValidForCustomDamage and not zombie:getVariableBoolean("ZF_HealthSet") then
-        zombie:setHealth(defaultHP)
         if zombie:getHealth() == defaultHP then
             zombie:setVariable("ZF_HealthSet",true)
         end
+        zombie:setHealth(defaultHP)
 
         -- makes sure zombies have high health amounts server side to not get stale
-        ZomboidForge.SyncZombieHealth(zombie,client_player,defaultHP)
+        ZomboidForge.SyncZombieHealth(zombie,client_player,10)
     end
 
     return {
