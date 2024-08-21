@@ -33,8 +33,9 @@ Events.OnCreatePlayer.Add(initTLOU_OnGameStart)
 --#region Handle damage system
 
 -- `zombie` has agro on an `IsoGameCharacter`. 
--- Trigger `zombieAgroCharacter` of `zombie` on `target`.
--- Triggers `onHit_zombie2player` if `zombie` attacks `target`
+-- - Trigger `zombieAgroCharacter` of `zombie` on `target`.
+-- - Triggers `onHit_zombie2player` if `zombie` attacks `target` and `target` has `hitReaction`.
+-- - Triggers `onHit_zombieAttacking` if `zombie` attacks `target`, even when `target` does have `hitReaction`.
 --
 -- `data`:
 -- - `zombie` IsoZombie
@@ -68,11 +69,20 @@ ZomboidForge.ZombieAgro = function(data)
         end
 
         -- trigger zombie hitting player behavior
-        if zombie:isAttacking() and target:hasHitReaction() then
+        if zombie:isAttacking() then
             -- custom on hit functions
             if ZombieTable.onHit_zombie2player then
-                for i=1,#ZombieTable.onHit_zombie2player do
-                    ZomboidForge[ZombieTable.onHit_zombie2player[i]](ZType,zombie,target)
+                for i=1,#ZombieTable.onHit_zombieAttacking do
+                    ZomboidForge[ZombieTable.onHit_zombieAttacking[i]](ZType,zombie,target)
+                end
+            end
+
+            if target:hasHitReaction() then
+                -- custom on hit functions
+                if ZombieTable.onHit_zombie2player then
+                    for i=1,#ZombieTable.onHit_zombie2player do
+                        ZomboidForge[ZombieTable.onHit_zombie2player[i]](ZType,zombie,target)
+                    end
                 end
             end
         end
