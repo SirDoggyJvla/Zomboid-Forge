@@ -71,7 +71,7 @@ ZomboidForge.ZombieAgro = function(data)
         -- trigger zombie hitting player behavior
         if zombie:isAttacking() then
             -- custom on hit functions
-            if ZombieTable.onHit_zombie2player then
+            if ZombieTable.onHit_zombieAttacking then
                 for i=1,#ZombieTable.onHit_zombieAttacking do
                     ZomboidForge[ZombieTable.onHit_zombieAttacking[i]](ZType,zombie,target)
                 end

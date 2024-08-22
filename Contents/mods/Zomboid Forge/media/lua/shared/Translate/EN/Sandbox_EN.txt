@@ -9,7 +9,7 @@ Sandbox_EN = {
 	Sandbox_ZomboidForge_nametags_tooltip = "Toggling this ON will allow players to have the nametags of the various zombies. If toggled OFF, no one can see the nametags. Each players can also chose to disable the nametags for themselves by using Mod Options. Note that some modders can chose to disable nametags entirely for their own custom zombies. <BR> <IMAGECENTRE:media/ui/nametag_example.png> <LINE>",
 
 	Sandbox_ZomboidForge_nametagsAlwaysOn = "Allow zombie nametags always on",
-	Sandbox_ZomboidForge_nametagsAlwaysOn_tooltip = "Toggling this ON will allow players to have the nametags of the various zombies always on if nametags are allowed, activated and if players activated the option for it in their mod options. <BR> This will make the game significantly easier as players will be able to see zombies when they don't look at them.",
+	Sandbox_ZomboidForge_nametagsAlwaysOn_tooltip = "Toggling this ON will allow players to have the nametags of the various zombies always on if nametags are allowed, activated and if players activated the option for it in their mod options. <BR> This can make the game significantly easier to spot zombies. Zombies behind the player won't be shown",
 
 	/* Spawn Weights */
 	Sandbox_ZomboidForge_SpawnWeightExplanation = "Explanation of spawn weights",

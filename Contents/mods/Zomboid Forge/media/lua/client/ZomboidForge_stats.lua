@@ -103,14 +103,14 @@ end
 --#region Update zombie stats
 
 ZomboidForge.UpdateZombieStats = function(zombie,ZombieTable,forceUpdate)
-    -- update zombie stats
-    ZomboidForge.UpdateZombieStatsNonVerifiable(zombie,ZombieTable)
-
     -- update stats that can be verified
     local shouldUpdate = ZomboidForge.UpdateZombieStatsVerifiable(zombie, ZombieTable)
 
     -- update stats if should update
     if shouldUpdate or forceUpdate then
+        -- update zombie stats
+        ZomboidForge.UpdateZombieStatsNonVerifiable(zombie,ZombieTable)
+
         zombie:makeInactive(true)
         zombie:makeInactive(false)
     end
