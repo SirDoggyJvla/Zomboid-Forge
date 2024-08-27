@@ -70,10 +70,17 @@ ZomboidForge.ZombieAgro = function(data)
 
         -- trigger zombie hitting player behavior
         if zombie:isAttacking() then
+            local attackOutcome = zombie:getVariableString("AttackOutcome")
+
             -- custom on hit functions
             if ZombieTable.onHit_zombieAttacking then
                 for i=1,#ZombieTable.onHit_zombieAttacking do
-                    ZomboidForge[ZombieTable.onHit_zombieAttacking[i]](ZType,zombie,target)
+                    ZomboidForge[ZombieTable.onHit_zombieAttacking[i]]({
+                        ZType = ZType,
+                        zombie = zombie,
+                        victim = target,
+                        attackOutcome = attackOutcome,
+                    })
                 end
             end
 
@@ -81,7 +88,13 @@ ZomboidForge.ZombieAgro = function(data)
                 -- custom on hit functions
                 if ZombieTable.onHit_zombie2player then
                     for i=1,#ZombieTable.onHit_zombie2player do
-                        ZomboidForge[ZombieTable.onHit_zombie2player[i]](ZType,zombie,target)
+                        ZomboidForge[ZombieTable.onHit_zombie2player[i]]({
+                            ZType = ZType,
+                            zombie = zombie,
+                            victim = target,
+                            attackOutcome = attackOutcome,
+                            hitReaction = target:getHitReaction()
+                        })
                     end
                 end
             end
@@ -170,7 +183,7 @@ ZomboidForge.DamageZombie = function(data)
     end
 
     -- check if zombie should get pushed back
-    if args.setAvoidDamage and not args.shouldIgnoreStagger then
+    if args.shouldAvoidDamage and not args.shouldIgnoreStagger then
         ZomboidForge.StaggerZombie(zombie,attacker,handWeapon, nil)
     end
 end
@@ -263,9 +276,8 @@ ZomboidForge.SetZombieCombatData = function(data)
     local fireKillRate = args.fireKillRate
     local noTeeth = args.noTeeth
 
-    local defaultHP = ZombieTable.HP or 0
-    local isValidForCustomDamage = not (shouldAvoidDamage == true) and defaultHP ~= 0
-    local setAvoidDamage = shouldAvoidDamage or isValidForCustomDamage
+    local defaultHP = ZombieTable.HP or zombie:getHealth()
+    local isValidForCustomDamage = not (shouldAvoidDamage == true) and defaultHP ~= 0 or shouldIgnoreStagger
 
     -- resetHitTime
     -- this sets the damage ramp up
@@ -283,19 +295,19 @@ ZomboidForge.SetZombieCombatData = function(data)
         zombie:setFireKillRate(fireKillRate)
     end
 
-    -- check if zombie should ignore stagger
-    if shouldIgnoreStagger ~= nil and zombie:isIgnoreStaggerBack() ~= shouldIgnoreStagger then
-        zombie:setIgnoreStaggerBack(shouldIgnoreStagger)
-    end
-
     -- check if zombie should only take jawstabs
     if onlyJawStab ~= nil and zombie:isOnlyJawStab() ~= onlyJawStab then
         zombie:setOnlyJawStab(onlyJawStab)
     end
 
+    -- check if zombie should avoid staggers (requires manual handling of damage)
+    if shouldIgnoreStagger ~= nil and zombie:avoidDamage() ~= shouldIgnoreStagger then
+        zombie:setAvoidDamage(shouldIgnoreStagger)
+    end
+
     -- check if zombie should avoid damage
-    if setAvoidDamage ~= nil and zombie:avoidDamage() ~= setAvoidDamage then
-        zombie:setAvoidDamage(setAvoidDamage)
+    if shouldAvoidDamage ~= nil and zombie:getNoDamage() ~= shouldAvoidDamage then
+        zombie:setNoDamage(true)
     end
 
     -- check if zombie should have no teeth (can't bite)
@@ -318,7 +330,6 @@ ZomboidForge.SetZombieCombatData = function(data)
         shouldAvoidDamage = shouldAvoidDamage,
         shouldIgnoreStagger = shouldIgnoreStagger,
         isValidForCustomDamage = isValidForCustomDamage,
-        setAvoidDamage = setAvoidDamage,
     }
 end
 

@@ -127,7 +127,6 @@ ZomboidForge.ZombieUpdate = function(zombie)
     end
 end
 
-
 local tickAmount = 0
 -- Handles the updating of the stats of every zombies as well as initializing them. zombieList is initialized
 -- for the client and doesn't need to be changed after. The code goes through every zombie index and updates
