@@ -150,17 +150,13 @@ ZomboidForge.ZombSeedRand = function(data,val1,val2)
 end
 
 ZomboidForge.IsZombieValid = function(zombie)
-    local notValid
-    for k,funct in pairs(ZomboidForge.checkValid) do
-        if k then
-            if getActivatedMods():contains(k) then
-                notValid = funct(zombie)
-            end
-        else
-            notValid = funct(zombie)
-        end
+    if zombie:isReanimatedPlayer() then
+        return false
+    end
 
-        if notValid then
+    if getActivatedMods():contains("Bandits") then
+        local brain = BanditBrain.Get(zombie)
+        if zombie:getVariableBoolean("Bandit") or brain then
             return false
         end
     end
