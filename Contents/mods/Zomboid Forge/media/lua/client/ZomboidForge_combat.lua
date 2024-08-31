@@ -269,12 +269,29 @@ ZomboidForge.SetZombieCombatData = function(data)
     -- get zombie data
     local tag = table.newarray("shouldIgnoreStagger","shouldAvoidDamage","onlyJawStab","resetHitTime","fireKillRate","noTeeth")
     local args = ZomboidForge.GetBooleanResult(zombie,ZType,tag,ZombieTable,onHit)
-    local shouldIgnoreStagger = args.shouldIgnoreStagger
-    local shouldAvoidDamage = args.shouldAvoidDamage
-    local onlyJawStab = args.onlyJawStab
-    local resetHitTime = args.resetHitTime
-    local fireKillRate = args.fireKillRate
-    local noTeeth = args.noTeeth
+
+    -- retrieve values in local variables and check if zombie should get a force update
+    local shouldIgnoreStagger
+    local shouldAvoidDamage
+    local onlyJawStab
+    local resetHitTime
+    local fireKillRate
+    local noTeeth
+    if not onHit then
+        shouldIgnoreStagger = args.shouldIgnoreStagger
+        shouldAvoidDamage = args.shouldAvoidDamage
+        onlyJawStab = args.onlyJawStab
+        resetHitTime = args.resetHitTime
+        fireKillRate = args.fireKillRate
+        noTeeth = args.noTeeth
+    else
+        shouldIgnoreStagger = args.shouldIgnoreStagger or false
+        shouldAvoidDamage = args.shouldAvoidDamage or false
+        onlyJawStab = args.onlyJawStab or false
+        resetHitTime = args.resetHitTime
+        fireKillRate = args.fireKillRate
+        noTeeth = args.noTeeth or false
+    end
 
     local defaultHP = ZombieTable.HP or zombie:getHealth()
     local isValidForCustomDamage = not (shouldAvoidDamage == true) and defaultHP ~= 0 or shouldIgnoreStagger
@@ -307,7 +324,7 @@ ZomboidForge.SetZombieCombatData = function(data)
 
     -- check if zombie should avoid damage
     if shouldAvoidDamage ~= nil and zombie:getNoDamage() ~= shouldAvoidDamage then
-        zombie:setNoDamage(true)
+        zombie:setNoDamage(shouldAvoidDamage)
     end
 
     -- check if zombie should have no teeth (can't bite)

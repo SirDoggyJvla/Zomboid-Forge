@@ -418,10 +418,6 @@ function Advanced_trajectory.checkontick()
                             -- end
                         end
 
-                        if isClient() then
-                            sendClientCommand("ATY_cshotzombie","true",{Zombie:getOnlineID(),vt[19]:getOnlineID()})
-                        end
-
                         damagezb = damagezb * vt[6] * 0.1
 
                         if not Advanced_trajectory.hasFlameWeapon then
