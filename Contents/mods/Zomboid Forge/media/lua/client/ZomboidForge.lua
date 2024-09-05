@@ -115,7 +115,7 @@ ZomboidForge.ZombieUpdate = function(zombie)
         end
     end
 
-    -- run zombie attack functions
+    -- run zombie attack functions if zombie is agro
     local target = zombie:getTarget()
     if target then
         ZomboidForge.ZombieAgro({

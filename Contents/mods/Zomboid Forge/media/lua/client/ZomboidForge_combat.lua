@@ -13,9 +13,6 @@ This file defines the tools to change combat related stuff of zombies for the mo
 
 --- Import functions localy for performances reasons
 local table = table -- Lua's table module
-local ipairs = ipairs -- ipairs function
-local pairs = pairs -- pairs function
-local ZombRand = ZombRand -- java function
 
 --- import module from ZomboidForge
 local ZomboidForge = require "ZomboidForge_module"
@@ -143,9 +140,6 @@ ZomboidForge.DamageZombie = function(data)
 
     -- skip if zombie is not valid for custom damage
     if args.isValidForCustomDamage then
-        -- makes sure zombies have high health amounts server side to not get stale
-        ZomboidForge.SyncZombieHealth(zombie,attacker,10)
-
         -- checks if player is handpushing zombie
         -- this is done by checking the weapon are hands and that damage is close to 0
         local handPush = false
@@ -172,6 +166,9 @@ ZomboidForge.DamageZombie = function(data)
             -- get HP and apply damage
             local HP = zombie:getHealth()
             HP = HP - damage
+
+            -- a zombie goes stale if it has a too high difference of HP server side and client side
+            ZomboidForge.SyncZombieHealth(zombie,attacker,HP + 5)
 
             -- kill zombie if zombie should die or apply damage
             if HP > 0 then
@@ -340,7 +337,7 @@ ZomboidForge.SetZombieCombatData = function(data)
         zombie:setHealth(defaultHP)
 
         -- makes sure zombies have high health amounts server side to not get stale
-        ZomboidForge.SyncZombieHealth(zombie,client_player,10)
+        ZomboidForge.SyncZombieHealth(zombie,client_player,defaultHP+5)
     end
 
     return {
@@ -355,6 +352,7 @@ end
 
 --#region Determine Hit Reaction for zombies in multiplayer
 
+local randHitReaction = newrandom()
 -- used to retrieve R and L shots
 local direction_side = {
     [0] = "ShotChest",
@@ -376,14 +374,14 @@ ZomboidForge.DetermineHitReaction = function(attacker, zombie, handWeapon)
     -- if gun/ranged
     if attackerHitReaction == "Shot" then
         -- Roll crit hit
-        attacker:setCriticalHit(ZombRand(100) < client_player:calculateCritChance(zombie))
+        attacker:setCriticalHit(randHitReaction:random(0,100) < client_player:calculateCritChance(zombie))
 
         -- default to ShotBelly and get hit direction
         hitReaction = "ShotBelly";
         local hitDirection = ZomboidForge.DetermineHitDirection(attacker, zombie, handWeapon)
 
         -- if N then roll for variation
-        if (hitDirection == "N" and (zombie:isHitFromBehind() or ZombRand(2) == 1))
+        if (hitDirection == "N" and (zombie:isHitFromBehind() or randHitReaction:random(0,1) == 1))
             or (hitDirection == "S")
         then
             hitReaction = "ShotBellyStep"
@@ -392,9 +390,9 @@ ZomboidForge.DetermineHitReaction = function(attacker, zombie, handWeapon)
         -- if R or L get hit reaction
         if hitDirection == "R" or hitDirection == "L" then
             if zombie:isHitFromBehind() then
-                hitReaction = direction_side[ZombRand(3)]
+                hitReaction = direction_side[randHitReaction:random(0,2)]
             else
-                hitReaction = direction_side[ZombRand(5)]
+                hitReaction = direction_side[randHitReaction:random(0,4)]
             end
 
             hitReaction = hitReaction..hitDirection
@@ -405,7 +403,7 @@ ZomboidForge.DetermineHitReaction = function(attacker, zombie, handWeapon)
             if hitDirection == "S" then
                 hitReaction = "ShotHeadFwd"
             elseif (hitDirection == "N")
-                or ((hitDirection == "L" or hitDirection == "R") and ZombRand(4) == 0)
+                or ((hitDirection == "L" or hitDirection == "R") and randHitReaction:random(0,3) == 0)
             then
                 hitReaction = "ShotHeadBwd"
             end
@@ -414,7 +412,7 @@ ZomboidForge.DetermineHitReaction = function(attacker, zombie, handWeapon)
         -- supposed to be the part that handles blood but that can wait
 
         -- roll to have a variation in ShotHead reaction
-        if hitReaction == "ShotHeadFwd" and ZombRand(2) == 0 then
+        if hitReaction == "ShotHeadFwd" and randHitReaction:random(0,1) == 0 then
             hitReaction = "ShotHeadFwd02"
         end
 
@@ -488,14 +486,14 @@ ZomboidForge.DetermineHitDirection = function(attacker, zombie, handWeapon)
     if var12 < 45 then
         zombie:setHitFromBehind(true)
         hitDirection = "S"
-        if ZombRand(9) > 6 then
+        if randHitReaction:random(0,8) > 6 then
             hitDirection = "L"
-        elseif ZombRand(9) > 4 then
+        elseif randHitReaction:random(0,8) > 4 then
             hitDirection = "R"
         end
     elseif var12 < 90 then
         zombie:setHitFromBehind(true)
-        if ZombRand(4) == 0 then
+        if randHitReaction:random(0,3) == 0 then
             hitDirection = "S"
         else
             hitDirection = "R"
@@ -503,20 +501,20 @@ ZomboidForge.DetermineHitDirection = function(attacker, zombie, handWeapon)
     elseif var12 < 135 then
         hitDirection = "R"
     elseif var12 < 180 then
-        if ZombRand(4) == 0 then
+        if randHitReaction:random(0,3) == 0 then
             hitDirection = "N"
         else
             hitDirection = "R"
         end
     elseif var12 < 225 then
         hitDirection = "N"
-        if ZombRand(9) > 4 then
+        if randHitReaction:random(0,8) > 4 then
             hitDirection = "R"
-        elseif ZombRand(9) > 6 then
+        elseif randHitReaction:random(0,8) > 6 then
             hitDirection = "L"
         end
     elseif var12 < 270 then
-        if ZombRand(4) == 0 then
+        if randHitReaction:random(0,3) == 0 then
             hitDirection = "N"
         else
             hitDirection = "L"
@@ -525,7 +523,7 @@ ZomboidForge.DetermineHitDirection = function(attacker, zombie, handWeapon)
         zombie:setHitFromBehind(true)
         hitDirection = "L"
     else
-        if ZombRand(4) == 0 then
+        if randHitReaction:random(0,3) == 0 then
             hitDirection = "S"
         else
             hitDirection = "L"

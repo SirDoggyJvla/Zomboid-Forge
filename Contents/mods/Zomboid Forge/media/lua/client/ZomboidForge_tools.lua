@@ -15,8 +15,10 @@ This file defines the tools of the mod Zomboid Forge
 local table = table -- Lua's table module
 local ipairs = ipairs -- ipairs function
 local pairs = pairs -- pairs function
-local ZombRand = ZombRand -- java function
 local Long = Long --Long for pID
+
+-- check for activated mods
+local activatedMod_Bandits = getActivatedMods():contains("Bandits")
 
 --- import module from ZomboidForge
 local ZomboidForge = require "ZomboidForge_module"
@@ -44,7 +46,7 @@ Events.OnInitGlobalModData.Add(initModData)
 
 --#region Small tools
 
--- Function to check if a table is a key table (dictionary)
+-- Function to recurse find a specific key within a table of tables.
 ---@param tbl table
 ---@param find any
 ---@return any
@@ -65,25 +67,44 @@ ZomboidForge.isArray = function(t)
         return false
     end
 
-    local i = 1
-    for _ in pairs(t) do
-        if t[i] == nil then
+    -- Check for any non-integer keys that might exist outside the numeric sequence
+    for k, _ in pairs(t) do
+        if type(k) ~= "number" or k % 1 ~= 0 or k < 1 then
             return false
         end
-        i = i + 1
     end
     return true
 end
 
 -- Function to check if a table is a key table (dictionary)
 ZomboidForge.isKeyTable = function(t)
-    -- A table is a key table if it's not an array
-    return not ZomboidForge.isArray(t)
+    if type(t) ~= "table" then
+        return false
+    end
+
+    -- If we find any non-integer key, it's a key table (dictionary)
+    for k, _ in pairs(t) do
+        if type(k) ~= "number" or k % 1 ~= 0 or k < 1 then
+            return true
+        end
+    end
+
+    return false
 end
 
 
 local A1, A2 = 727595, 798405  -- 5^17=D20*A1+A2
 local D20, D40 = 1048576, 1099511627776  -- 2^20, 2^40
+-- Seeded random used in determining the `ZType` of a zombie.
+---@param trueID        int
+ZomboidForge.seededRand = function(trueID,max)
+    trueID = trueID < 0 and -trueID or trueID
+    local V = (trueID*A2 + A1) % D20
+    V = (V*D20 + A2) % D40
+    V = (V/D40) * max
+    return V - V % 1 + 1
+end
+
 -- Outputs a seeded random for this specific `zombie` synced for each clients.
 --
 -- Values can be floats or integers. Giving `uniqueRandom` as a number will allow the use of proper random every tick. However this random
@@ -109,21 +130,28 @@ ZomboidForge.ZombSeedRand = function(data,val1,val2)
     local min
     local max
 
-    -- retrieve values
+    -- retrieve values from table if data
     if type(data) == "table" then
         trueID = data.trueID or ZomboidForge.pID(data.zombie)
         uniqueRandom = data.uniqueRandom
+
+        -- retrieve min and max
         min = data.min or 0
         max = data.max
     else
+        -- retrieve trueID based on the type of data
         if instanceof(data,"IsoZombie") then
             ---@cast data IsoZombie
 
             trueID = ZomboidForge.pID(data)
+
+        -- must be trueID then or else throws an error (wrongly used data type)
         else
             trueID = data
         end
 
+        -- if no val2, then val1 is max
+        -- else min and max are defined
         min = val2 and val1 or 0
         max = val2 and val2 or val1
     end
@@ -149,23 +177,29 @@ ZomboidForge.ZombSeedRand = function(data,val1,val2)
     return (V - V%1) + 1 + min
 end
 
+-- Check if zombie is valid to be handled by Zomboid Forge.
+-- - `zombie` is not reanimated
+-- - `zombie` is not a bandit (Bandits mod)
 ZomboidForge.IsZombieValid = function(zombie)
+    -- check if zombie is reanimated
     if zombie:isReanimatedPlayer() then
         return false
     end
 
-    if getActivatedMods():contains("Bandits") then
+    -- check if `zombie` is a bandit
+    if activatedMod_Bandits then
         local brain = BanditBrain.Get(zombie)
         if zombie:getVariableBoolean("Bandit") or brain then
             return false
         end
     end
 
+    -- `zombie` passes every checks
     return true
 end
 
 -- Based on Chuck's work. Outputs the `trueID` of a `Zombie`.
--- Thx to the help of Shurutsue, Albion and probably others.
+-- Thx to the help of Shurutsue, Albion and possibly others.
 --
 -- When hat of a zombie falls off, it changes it's `persistentOutfitID` but those two `pIDs` are linked.
 -- This allows to access the trueID of a `Zombie` (the original pID with hat) from both pIDs.
@@ -174,19 +208,22 @@ end
 ---@param zombie        IsoZombie
 ---@return integer      trueID
 ZomboidForge.pID = function(zombie)
+    -- retrieve zombie pID
     local pID = zombie:getPersistentOutfitID()
 
     -- if zombie is not yet initialized by the game, force it to be initialized so no issues can arise from unset zombies
     if pID == 0 then
-        zombie:dressInRandomOutfit();
+        zombie:dressInRandomOutfit()
         pID = zombie:getPersistentOutfitID()
     end
 
+    -- verify if trueID is cached
     local found = ZomboidForge.TrueID[pID] and pID or ZomboidForge.HatFallen[pID]
     if found then
         return found
     end
 
+    -- transform the pID into bits
     local bits = string.split(string.reverse(Long.toUnsignedString(pID, 2)), "")
     while #bits < 16 do bits[#bits+1] = "0" end
 
@@ -199,7 +236,6 @@ ZomboidForge.pID = function(zombie)
     bits[16] = "1"
     ZomboidForge.HatFallen[Long.parseUnsignedLong(string.reverse(table.concat(bits, "")), 2)] = trueID
 
-    --ZomboidForge.TrueID[pID] = trueID
     return trueID
 end
 

@@ -13,10 +13,7 @@ This file defines the functions used to update the stats of zombies
 
 --- Import functions localy for performances reasons
 local table = table -- Lua's table module
-local ipairs = ipairs -- ipairs function
 local pairs = pairs -- pairs function
-local ZombRand = ZombRand -- java function
-local Long = Long --Long for pID
 
 --- import module from ZomboidForge
 local ZomboidForge = require "ZomboidForge_module"
@@ -42,25 +39,11 @@ Events.OnInitGlobalModData.Add(initModData)
 
 --#region ZType definition
 
-local A1, A2 = 727595, 798405  -- 5^17=D20*A1+A2
-local D20, D40 = 1048576, 1099511627776  -- 2^20, 2^40
--- Seeded random used in determining the `ZType` of a zombie.
---
--- Replaced by `ZomboidForge.ZombSeedRand`
----@param trueID        int
-ZomboidForge.seededRand = function(trueID,max)
-    trueID = math.abs(trueID)
-    local V = (trueID*A2 + A1) % D20
-    V = (V*D20 + A2) % D40
-    V = (V/D40) * max
-    return math.floor(V) + 1
-end
-
 --- Rolls the `ZType` of a zombie.
 ---@param trueID        int
 ZomboidForge.RollZType = function(trueID)
     -- chose a seeded random number based on max total weight
-    local rand = ZomboidForge.ZombSeedRand({trueID = trueID, max = ZomboidForge.TotalChance})
+    local rand = ZomboidForge.seededRand(trueID,ZomboidForge.TotalChance)
 
     -- test one by one each types and attribute if pass
     for ZType,ZombieTable in pairs(ZomboidForge.ZTypes) do
@@ -416,6 +399,7 @@ ZomboidForge.CheckInTable = function(tbl,value)
     return false
 end
 
+local randNonWeighted = newrandom()
 --- Randomly choses a tag within a table.
 -- ```lua
 --  {
@@ -430,9 +414,10 @@ end
 ---@param tbl           table
 ---@return string
 ZomboidForge.NonWeightedTable = function(tbl)
-    return tbl[ZombRand(1,#tbl+1)]
+    return tbl[randNonWeighted:random(1,#tbl)]
 end
 
+local randWeighted = newrandom()
 --- Randomly choses a tag within a table with weights.
 -- ```lua
 --  {
@@ -464,7 +449,7 @@ ZomboidForge.WeightedTable = function(tbl)
     end
 
     -- chose a seeded random number based on max total weight
-    local rand = ZombRand(1,totalWeight)
+    local rand = randWeighted:random(1,totalWeight)
 
     -- test one by one each types and attribute if pass
     for i = 1, #tbl do

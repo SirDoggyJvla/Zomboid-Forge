@@ -15,9 +15,7 @@ This allows modders to implement their own custom vocals and emitters without ha
 --[[ ================================================ ]]--
 --- Import functions localy for performances reasons
 local table = table -- Lua's table module
-local ipairs = ipairs -- ipairs function
 local pairs = pairs -- pairs function
-local ZombRand = ZombRand -- java function
 local tostring = tostring --tostring function
 
 --- import module from ZomboidForge

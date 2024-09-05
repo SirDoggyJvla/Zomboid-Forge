@@ -13,10 +13,6 @@ This file defines the core of the mod Zomboid Forge
 
 --- Import functions localy for performances reasons
 local table = table -- Lua's table module
-local ipairs = ipairs -- ipairs function
-local pairs = pairs -- pairs function
-local ZombRand = ZombRand -- java function
-local tostring = tostring --tostring function
 
 --- import module from ZomboidForge
 local ZomboidForge = require "ZomboidForge_module"
