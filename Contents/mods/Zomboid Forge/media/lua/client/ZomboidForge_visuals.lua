@@ -319,7 +319,7 @@ end
 -- Updates the nametag of the `zombie` if valid.
 ---@param zombie IsoZombie
 ---@param ZombieTable table
-ZomboidForge.UpdateNametag = function(zombie,ZombieTable,ticks,valid)
+ZomboidForge.UpdateNametag = function(zombie,ZombieTable,ticks,valid, isBehind)
     -- if not ticks then checks that nametag should be shown
     if not ticks then
         if not valid then
@@ -340,7 +340,7 @@ ZomboidForge.UpdateNametag = function(zombie,ZombieTable,ticks,valid)
         zombieModData.ticks = nil
 
         ZomboidForge.DeleteNametag(zombie)
-    elseif ZomboidForge.IsZombieBehind(zombie,client_player) then
+    elseif isBehind then
         ticks = math.min(ticks,100)
         zombieModData.ticks = ticks - 5
     else
@@ -405,14 +405,11 @@ end
 -- Checks if the `zombie` is valid to have its nametag displayed for local player.
 ---@param zombie IsoZombie
 ---@return boolean
-ZomboidForge.IsZombieValidForNametag = function(zombie,zombiesOnCursor)
-    -- retrieve zombie info
-    local isBehind = ZomboidForge.IsZombieBehind(zombie,client_player)
-
+ZomboidForge.IsZombieValidForNametag = function(zombie,zombiesOnCursor,isBehind)
     -- test for each options
     -- 1. draw nametag if should always be on
     if ZFModOptions.AlwaysOn.value
-    and (isClient() and SandboxVars.ZomboidForge.NametagsAlwaysOn or true)
+    and (not isClient() or SandboxVars.ZomboidForge.NametagsAlwaysOn)
     and not isBehind and client_player:CanSee(zombie)
     then
         return true

@@ -47,7 +47,6 @@ ZomboidForge_server.Commands.ZombieHandler.KillZombie = function(player,args)
 		"KillZombie",
 		{
 			attacker = player:getOnlineID(),
-			kill = true,
 			zombie = args.zombieOnlineID,
 		}
 	)
@@ -61,24 +60,44 @@ ZomboidForge_server.Commands.ZombieHandler.PathToSound = function(player,args)
 	)
 end
 
-ZomboidForge_server.Commands.ZombieHandler.UpdateHealth = function(player,args)
+ZomboidForge_server.Commands.ZombieHandler.UpdateZombieHealth = function(player,args)
 	-- only update if call from attacker
-	local attacker = getPlayerByOnlineID(args.attackerOnlineID)
-	if player ~= attacker then return end
+	local attackerOnlineID = args.attackerOnlineID
+	local attacker = getPlayerByOnlineID(attackerOnlineID)
 
 	-- get zombie
-	local zombieID = args.zombieOnlineID
-	local zombie = ZomboidForge_server.getZombieByOnlineID(attacker,zombieID)
+	local zombieOnlineID = args.zombieOnlineID
+	local zombie = ZomboidForge_server.getZombieByOnlineID(attacker,zombieOnlineID)
 	if not zombie then return end
 
-	-- set zombie health
-	zombie:setHealth(args.defaultHP)
-    zombie:setAttackedBy(attacker)
+	-- set zombie health if needed
+	local HP = args.defaultHP
+	if zombie:getHealth() ~= HP then
+		zombie:setHealth(HP)
+		zombie:setAttackedBy(attacker)
+	end
 
 	-- kill zombie if zombie should die
-	if args.defaultHP <= 0 then
-		ZomboidForge_server.Commands.ZombieHandler.KillZombie(attacker,{zombieOnlineID = zombieID})
-	
+	if HP > 0 then
+		sendServerCommand(
+			"ZombieHandler",
+			"UpdateZombieHealth",
+			{
+				HP = HP,
+				attackerOnlineID = attackerOnlineID,
+				zombieOnlineID = zombieOnlineID,
+			}
+		)
+	else
+		sendServerCommand(
+			"ZombieHandler",
+			"KillZombie",
+			{
+				attacker = attackerOnlineID,
+				zombie = zombieOnlineID,
+			}
+		)
+
 		zombie:changeState(ZombieOnGroundState.instance())
 		zombie:becomeCorpse()
 	end

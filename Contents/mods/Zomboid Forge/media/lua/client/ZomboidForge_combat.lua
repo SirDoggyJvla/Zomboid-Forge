@@ -99,7 +99,6 @@ ZomboidForge.ZombieAgro = function(data)
     end
 end
 
-
 -- Handles `damage` to `zombie` from `attacker`.
 --
 -- `data`:
@@ -126,8 +125,8 @@ ZomboidForge.DamageZombie = function(data)
     end
     local ZombieTable = data.ZombieTable or ZomboidForge.ZTypes[ZType]
 
-    -- get zombie info and apply combat data
-    local args = ZomboidForge.SetZombieCombatData({
+    -- intiialize data to send to combat data setter
+    local args = {
         zombie = zombie,
         ZombieTable = ZombieTable,
         ZType = ZType,
@@ -136,46 +135,73 @@ ZomboidForge.DamageZombie = function(data)
             handWeapon = handWeapon,
             damage = damage,
         },
+    }
+
+    -- checks if player is handpushing zombie or barefoot attack
+    -- this is done by checking the weapon are hands and if damage is close to 0
+    local handPush
+    local footStomp
+    if handWeapon:getFullType() == "Base.BareHands" then
+        -- hand push
+        if math.floor(damage) <= 0 then
+            handPush = true
+
+        -- foot stomp
+        else
+            footStomp = true
+        end
+    end
+
+    -- get zombie info and apply combat data
+    args = ZomboidForge.SetZombieCombatData({
+        zombie = zombie,
+        ZombieTable = ZombieTable,
+        ZType = ZType,
+        onHit = {
+            attacker = attacker,
+            handWeapon = handWeapon,
+            damage = damage,
+            handPush = handPush,
+            footStomp = footStomp,
+            knifeDeath = zombie:isKnifeDeath(),
+        },
     })
 
     -- skip if zombie is not valid for custom damage
-    if args.isValidForCustomDamage then
-        -- checks if player is handpushing zombie
-        -- this is done by checking the weapon are hands and that damage is close to 0
-        local handPush = false
-        if handWeapon:getFullType() == "Base.BareHands" and math.floor(damage) <= 0 then
-            handPush = true
+    if args.shouldUseDamageSystem and not handPush then
+        -- get HP
+        local HP = zombie:getHealth()
+
+        -- apply custom damage if any
+        local customDamage = args.customDamage
+        if customDamage then
+            damage = ZomboidForge[customDamage]({
+                ZType = ZType,
+                ZombieTable = ZombieTable,
+                attacker = attacker,
+                zombie = zombie,
+                handWeapon = handWeapon,
+                damage = damage,
+                HP = HP,
+                handPush = handPush,
+                footStomp = footStomp,
+            })
         end
 
-        -- apply damages
-        if zombie:isKnifeDeath() and not ZombieTable.jawStabImmune then
+        -- apply damage
+        HP = HP - damage/10
+
+        -- a zombie goes stale if it has a too high difference of HP server side and client side
+        -- update only if attacker is client to send a single call to the server to update health
+        if attacker == client_player then
+            ZomboidForge.SyncZombieHealth(zombie,attacker,HP)
+        end
+
+        -- kill zombie if zombie should die or apply damage
+        if HP > 0 then
+            zombie:setHealth(HP)
+        else
             ZomboidForge.KillZombie(zombie,attacker)
-        elseif not handPush then
-            -- apply custom damage if any
-            if ZombieTable.customDamage then
-                damage = ZomboidForge[ZombieTable.customDamage]({
-                    ZType = ZType,
-                    ZombieTable = ZombieTable,
-                    attacker = attacker,
-                    zombie = zombie,
-                    handWeapon = handWeapon,
-                    damage = damage,
-                })
-            end
-
-            -- get HP and apply damage
-            local HP = zombie:getHealth()
-            HP = HP - damage
-
-            -- a zombie goes stale if it has a too high difference of HP server side and client side
-            ZomboidForge.SyncZombieHealth(zombie,attacker,HP + 5)
-
-            -- kill zombie if zombie should die or apply damage
-            if HP > 0 then
-                zombie:setHealth(HP)
-            else
-                ZomboidForge.KillZombie(zombie,attacker)
-            end
         end
     end
 
@@ -194,7 +220,7 @@ ZomboidForge.SyncZombieHealth = function(zombie,character,HP)
     if isClient() then
         sendClientCommand(
             "ZombieHandler",
-            "UpdateHealth",
+            "UpdateZombieHealth",
             {
                 zombieOnlineID = zombie:getOnlineID(),
                 defaultHP = HP,
@@ -221,16 +247,18 @@ end
 ZomboidForge.KillZombie = function(zombie,attacker)
     if not zombie:isAlive() then return end
 
-    ZomboidForge.SyncZombieHealth(zombie,attacker,0)
+    if attacker == client_player then
+        ZomboidForge.SyncZombieHealth(zombie,attacker,0)
+    end
 
     -- remove emitters
     zombie:getEmitter():stopAll()
 
     -- kill zombie, cannot use zombie:Kill(attacker) bcs it doesn't do the job right
     zombie:setHealth(0)
-    zombie:changeState(ZombieOnGroundState.instance())
+    -- zombie:changeState(ZombieOnGroundState.instance())
     zombie:setAttackedBy(attacker)
-    zombie:becomeCorpse()
+    -- zombie:becomeCorpse()
     -- attacker:setZombieKills(attacker:getZombieKills()+1)
 
     ZomboidForge.DeleteZombieData(zombie,ZomboidForge.pID(zombie))
@@ -262,45 +290,81 @@ ZomboidForge.SetZombieCombatData = function(data)
     local ZombieTable = data.ZombieTable or ZomboidForge.ZTypes[ZType]
 
     local onHit = data.onHit
+    local currentHitTime = zombie:getHitTime()
+    if onHit then
+        onHit.currentHitTime = currentHitTime
+    end
 
     -- get zombie data
-    local tag = table.newarray("shouldIgnoreStagger","shouldAvoidDamage","onlyJawStab","resetHitTime","fireKillRate","noTeeth")
+    local tag = table.newarray(
+        "shouldIgnoreStagger",
+        "shouldAvoidDamage",
+        "onlyJawStab",
+        "hitTime",
+        "fireKillRate",
+        "noTeeth",
+        "jawStabImmune",
+        "canCrawlUnderVehicles"
+    )
     local args = ZomboidForge.GetBooleanResult(zombie,ZType,tag,ZombieTable,onHit)
 
-    -- retrieve values in local variables and check if zombie should get a force update
+
+    local hitTime = args.hitTime
+    local fireKillRate = args.fireKillRate
+    local jawStabImmune = args.jawStabImmune
+    local canCrawlUnderVehicles = args.canCrawlUnderVehicles
+
+    -- initialize locals
+    local noTeeth
     local shouldIgnoreStagger
     local shouldAvoidDamage
     local onlyJawStab
-    local resetHitTime
-    local fireKillRate
-    local noTeeth
+
+    -- don't force update the zombie, it is not necessary
     if not onHit then
         shouldIgnoreStagger = args.shouldIgnoreStagger
         shouldAvoidDamage = args.shouldAvoidDamage
         onlyJawStab = args.onlyJawStab
-        resetHitTime = args.resetHitTime
-        fireKillRate = args.fireKillRate
         noTeeth = args.noTeeth
+
+    -- force update the zombie to make sure it has proper reaction to attack even if recycled
     else
         shouldIgnoreStagger = args.shouldIgnoreStagger or false
         shouldAvoidDamage = args.shouldAvoidDamage or false
         onlyJawStab = args.onlyJawStab or false
-        resetHitTime = args.resetHitTime
-        fireKillRate = args.fireKillRate
         noTeeth = args.noTeeth or false
     end
 
-    local defaultHP = ZombieTable.HP or zombie:getHealth()
-    local isValidForCustomDamage = not (shouldAvoidDamage == true) and defaultHP ~= 0 or shouldIgnoreStagger
+    shouldIgnoreStagger = false
+
+    -- get data related to using custom damage or setting health
+    local defaultHP = ZombieTable.HP
+    local customDamage = ZombieTable.customDamage
+    local shouldUseCustomHP = defaultHP and defaultHP ~= 0
+    local shouldUseDamageSystem = shouldUseCustomHP or customDamage or jawStabImmune
+    local shouldSetNoDamage = shouldUseDamageSystem or shouldAvoidDamage
+
+    if onHit and jawStabImmune and onHit.knifeDeath then
+        shouldUseDamageSystem = false
+        shouldAvoidDamage = true
+        zombie:setKnifeDeath(false)
+    end
 
     -- resetHitTime
     -- this sets the damage ramp up
-    if resetHitTime ~= nil then
-        if type(resetHitTime) == "int" then
-            zombie:setHitTime(resetHitTime)
-        else
+    if hitTime then
+        if type(hitTime) == "number" then
+            if currentHitTime ~= hitTime then
+                zombie:setHitTime(hitTime)
+            end
+        elseif currentHitTime ~= 0 then
             zombie:setHitTime(0)
         end
+    end
+
+    -- canCrawlUnderVehicles
+    if canCrawlUnderVehicles ~= nil and canCrawlUnderVehicles ~= zombie:isCanCrawlUnderVehicle() then
+        zombie:setCanCrawlUnderVehicle(canCrawlUnderVehicles)
     end
 
     -- fireKillRate
@@ -320,8 +384,8 @@ ZomboidForge.SetZombieCombatData = function(data)
     end
 
     -- check if zombie should avoid damage
-    if shouldAvoidDamage ~= nil and zombie:getNoDamage() ~= shouldAvoidDamage then
-        zombie:setNoDamage(shouldAvoidDamage)
+    if shouldSetNoDamage ~= nil and zombie:getNoDamage() ~= shouldSetNoDamage then
+        zombie:setNoDamage(shouldSetNoDamage)
     end
 
     -- check if zombie should have no teeth (can't bite)
@@ -330,20 +394,27 @@ ZomboidForge.SetZombieCombatData = function(data)
     end
 
     -- initialize zombie custom health/damage
-    if isValidForCustomDamage and not zombie:getVariableBoolean("ZF_HealthSet") then
+    if shouldUseCustomHP and not zombie:getVariableBoolean("ZF_HealthSet") then
         if zombie:getHealth() == defaultHP then
             zombie:setVariable("ZF_HealthSet",true)
+        else
+            zombie:setHealth(defaultHP)
         end
-        zombie:setHealth(defaultHP)
 
         -- makes sure zombies have high health amounts server side to not get stale
-        ZomboidForge.SyncZombieHealth(zombie,client_player,defaultHP+5)
+        -- only the owner player sends the call to properly sync HP of zombie
+        local ownerPlayer = zombie.authOwnerPlayer
+        if ownerPlayer and ownerPlayer == client_player then
+            ZomboidForge.SyncZombieHealth(zombie,client_player,defaultHP)
+        end
     end
 
     return {
         shouldAvoidDamage = shouldAvoidDamage,
         shouldIgnoreStagger = shouldIgnoreStagger,
-        isValidForCustomDamage = isValidForCustomDamage,
+        customDamage = customDamage,
+        shouldUseDamageSystem = shouldUseDamageSystem,
+        jawStabImmune = jawStabImmune,
     }
 end
 
@@ -364,7 +435,7 @@ local direction_side = {
 -- Determine hit reaction for a zombie. This is used in multiplayer to trigger to correct stagger.
 --
 -- This is a complete recreation of `processHitDirection` from `IsoZombie.java` class.
----@param attacker IsoPlayer
+---@param attacker IsoGameCharacter
 ---@param zombie IsoZombie
 ---@param handWeapon HandWeapon
 ZomboidForge.DetermineHitReaction = function(attacker, zombie, handWeapon)

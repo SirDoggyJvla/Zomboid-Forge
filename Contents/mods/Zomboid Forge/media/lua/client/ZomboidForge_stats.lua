@@ -85,7 +85,16 @@ end
 
 --#region Update zombie stats
 
-ZomboidForge.UpdateZombieStats = function(zombie,ZombieTable,forceUpdate)
+-- Update the stats of the `zombie`. Only updates if the zombie doesn't have
+-- the right verifiable stats.
+---@param zombie IsoZombie
+---@param ZType string|nil
+---@param ZombieTable table|nil
+---@param forceUpdate boolean|nil
+ZomboidForge.UpdateZombieStats = function(zombie,ZType,ZombieTable,forceUpdate)
+    ZType = ZType or ZomboidForge.GetZType(ZomboidForge.pID(zombie))
+    ZombieTable = ZombieTable or ZomboidForge.ZTypes[ZType]
+
     -- update stats that can be verified
     local shouldUpdate = ZomboidForge.UpdateZombieStatsVerifiable(zombie, ZombieTable)
 
@@ -115,7 +124,7 @@ ZomboidForge.UpdateZombieStatsVerifiable = function(zombie,ZombieTable)
 
         -- walktype needs to check if it needs to have crawlers
         local walktype = stat_name == "walktype"
-        if not walktype or walktype and stat2set ~= 4 then
+        if not walktype or stat2set ~= 4 then
             -- verify current stats are the correct one, else update them
             if not (zombie[classField] == stat_data.returnValue[stat2set]) and stat2set then
                 getSandboxOptions():set(stat_data.setSandboxOption,stat2set)

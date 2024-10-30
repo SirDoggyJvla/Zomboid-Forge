@@ -16,22 +16,23 @@ local table = table -- Lua's table module
 
 --- import module from ZomboidForge
 local ZomboidForge = require "ZomboidForge_module"
+require "ZomboidForge_tools"
 
 -- localy initialize player
-local player = getPlayer()
+local client_player = getPlayer()
 local function initTLOU_OnGameStart(playerIndex, player_init)
-	player = getPlayer()
+	client_player = getPlayer()
 end
 Events.OnCreatePlayer.Remove(initTLOU_OnGameStart)
 Events.OnCreatePlayer.Add(initTLOU_OnGameStart)
 
 local zombieList
----@param onlineID          int
+---@param onlineID int
 ---@return IsoZombie|nil
 ZomboidForge.getZombieByOnlineID = function(onlineID)
     -- initialize zombie list
     if not zombieList then
-        zombieList = player:getCell():getZombieList()
+        zombieList = client_player:getCell():getZombieList()
     end
 
     -- get zombie if in player's cell
@@ -48,7 +49,7 @@ end
 -- Sends a request to server to update every clients animationVariable for every clients.
 ---@param args          table
 ZomboidForge.Commands.ZombieHandler.SetAnimationVariable = function(args)
-    if player ~= getPlayerByOnlineID(args.id) then
+    if client_player ~= getPlayerByOnlineID(args.id) then
         -- retrieve zombie
         local zombie = ZomboidForge.getZombieByOnlineID(args.zombie)
         if zombie then
@@ -59,28 +60,22 @@ ZomboidForge.Commands.ZombieHandler.SetAnimationVariable = function(args)
     end
 end
 
--- Kill zombie if told to do so. Else just set the HP to the given value
-ZomboidForge.Commands.ZombieHandler.DamageZombie = function(args)
+-- Force update zombie health for client
+ZomboidForge.Commands.ZombieHandler.UpdateZombieHealth = function(args)
     -- get zombie info
-    local zombie = ZomboidForge.getZombieByOnlineID(args.zombie)
-    if zombie then
-        if not ZomboidForge.IsZombieValid(zombie) then return end
-
+    local zombie = ZomboidForge.getZombieByOnlineID(args.zombieOnlineID)
+    if zombie and ZomboidForge.IsZombieValid(zombie) then
         -- retrieve attacker IsoPlayer
-        local attacker = getPlayerByOnlineID(args.attacker)
+        local attacker = getPlayerByOnlineID(args.attackerOnlineID)
 
-        -- kill if need to kill
-        -- else stagger with proper HitReaction
-        if args.kill then
-            -- kill zombie
-            ZomboidForge.KillZombie(zombie,attacker)
-        else
-            if not zombie:avoidDamage() then
-                zombie:setAvoidDamage(true)
-            end
+        -- set zombie attacked by attacker
+        if attacker and attacker ~= client_player then
+            -- update health
+            zombie:setHealth(args.HP)
+            zombie:setAttackedBy(attacker)
 
-            if not args.shouldNotStagger then
-                ZomboidForge.ApplyHitReaction(zombie,attacker,args.hitReaction)
+            if not zombie:getVariableBoolean("ZF_HealthSet") then
+                zombie:setVariable("ZF_HealthSet",true)
             end
         end
     end

@@ -192,6 +192,10 @@ ZomboidForge.IsZombieValid = function(zombie)
         if zombie:getVariableBoolean("Bandit") or brain then
             return false
         end
+        local gmd = GetBanditModData()
+        if gmd.Queue[BanditUtils.GetCharacterID(zombie)] then
+            return false
+        end
     end
 
     -- `zombie` passes every checks
@@ -339,6 +343,7 @@ ZomboidForge.IsZombieOnCursor = function(zombie)
 end
 
 -- Zombies that are around the client radius cursor will be valid to show their nametags.
+-- This takes into account zombies on different levels.
 ---@return table
 ZomboidForge.GetZombiesOnCursor = function()
     local zombiesOnCursor = {}
@@ -376,6 +381,25 @@ ZomboidForge.GetZombiesOnCursor = function()
     end
 
     return zombiesOnCursor
+end
+
+-- Zombies that are in the client FOV will be put in a key-table for easy checking.
+---@return table
+ZomboidForge.GetZombiesInFov = function()
+    local zombiesInFov = {}
+
+    local spottedMovingObjects = client_player:getSpottedList()
+
+    if spottedMovingObjects then
+        for i = 0, spottedMovingObjects:size() - 1 do
+            local spottedMovingObject = spottedMovingObjects:get(i)
+            if instanceof(spottedMovingObject, "IsoZombie") then
+                zombiesInFov[spottedMovingObject] = true
+            end
+        end
+    end
+
+    return zombiesInFov
 end
 
 --#endregion

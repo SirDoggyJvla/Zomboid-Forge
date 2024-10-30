@@ -8,6 +8,11 @@
 
 This file defines the core of the mod Zomboid Forge
 
+-- animation stuff and custom animation triggering (used in bumped AnimSets)
+zombie:setBumpType("Die")
+print(zombie:getBumpType())
+print(zombie:getActionStateName())
+
 ]]--
 --[[ ================================================ ]]--
 
@@ -86,13 +91,6 @@ ZomboidForge.ZombieUpdate = function(zombie)
     local ZType = ZomboidForge.GetZType(trueID)
     local ZombieTable = ZomboidForge.ZTypes[ZType]
 
-    -- run custom behavior functions for this zombie
-    if ZombieTable.customBehavior then
-        for i = 1,#ZombieTable.customBehavior do
-            ZomboidForge[ZombieTable.customBehavior[i]](zombie,ZType)
-        end
-    end
-
     -- run onThump functions
     if ZombieTable.onThump then
         -- run code if zombie has thumping target
@@ -147,8 +145,22 @@ ZomboidForge.OnTick = function(tick)
     -- Update things than need to be updated every ticks
     local showNametag = SandboxVars.ZomboidForge.Nametags and ZFModOptions.NameTag.value
     local zombiesOnCursor
+    local zombiesInFov = {}
     if showNametag then
+        -- get zombies on cursor
         zombiesOnCursor = ZomboidForge.GetZombiesOnCursor()
+
+        -- get zombies in FOV in a key-table for easy check
+        local spottedMovingObjects = client_player:getSpottedList()
+
+        if spottedMovingObjects then
+            for i = 0, spottedMovingObjects:size() - 1 do
+                local spottedMovingObject = spottedMovingObjects:get(i)
+                if instanceof(spottedMovingObject, "IsoZombie") then
+                    zombiesInFov[spottedMovingObject] = true
+                end
+            end
+        end
     end
 
     -- Define the fraction variable
@@ -173,7 +185,7 @@ ZomboidForge.OnTick = function(tick)
                     ZomboidForge.UpdateVisuals(zombie, ZombieTable, ZType)
 
                     -- update stats that can be verified
-                    ZomboidForge.UpdateZombieStats(zombie, ZombieTable)
+                    ZomboidForge.UpdateZombieStats(zombie, ZType, ZombieTable)
 
                     -- set combat data
                     ZomboidForge.SetZombieCombatData({
@@ -191,13 +203,21 @@ ZomboidForge.OnTick = function(tick)
                 end
             end
 
+            -- run custom behavior functions for this zombie
+            if ZombieTable.customBehavior then
+                for j = 1,#ZombieTable.customBehavior do
+                    ZomboidForge[ZombieTable.customBehavior[j]](zombie,ZType,ZombieTable,tick)
+                end
+            end
+
             -- update nametag, needs to be updated OnTick bcs if zombie
             -- gets staggered it doesn't get updated with OnZombieUpdate
             if showNametag and ZombieTable.name then
                 local ticks = zombie:getModData().ticks
-                local valid = ZomboidForge.IsZombieValidForNametag(zombie, zombiesOnCursor)
+                local isBehind = not zombiesInFov[zombie]
+                local valid = ZomboidForge.IsZombieValidForNametag(zombie,zombiesOnCursor,isBehind)
 
-                ZomboidForge.UpdateNametag(zombie, ZombieTable, ticks, valid)
+                ZomboidForge.UpdateNametag(zombie,ZombieTable,ticks,valid,isBehind)
             end
         end
     end
@@ -257,7 +277,7 @@ ZomboidForge.OnDeath = function(zombie)
     if ZombieTable.zombieDeath then
         -- run custom behavior functions for this zombie
         for i = 1,#ZombieTable.zombieDeath do
-            ZomboidForge[ZombieTable.zombieDeath[i]](zombie,ZType)
+            ZomboidForge[ZombieTable.zombieDeath[i]](zombie,ZType,ZombieTable)
         end
     end
 
