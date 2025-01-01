@@ -1,0 +1,9 @@
+id=ZomboidForge_beta
+name=Zomboid Forge [Beta]
+description=Zomboid Forge is a Project Zomboid framework that modders can use to easily implement zombie types that are compatible with each others.
+poster=poster.png
+authors=SirDoggyJvla
+icon=icon.png
+url=https://ko-fi.com/sirdoggyjvla
+versionMin=42.0
+require=/StarlitLibrary
