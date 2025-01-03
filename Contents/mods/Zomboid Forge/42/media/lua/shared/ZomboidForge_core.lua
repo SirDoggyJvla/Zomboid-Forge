@@ -13,12 +13,23 @@ Core of ZomboidForge
 
 -- requirements
 local ZomboidForge = require "ZomboidForge_module"
+require "ZomboidForge_stats"
+require "ZomboidForge_ModOptions"
+require "ISUI/ZombieNametag"
 
 -- caching
 local IsZombieValid = ZomboidForge.IsZombieValid
+local isValidForNametag = ZombieNametag.isValidForNametag
 local zombieList
-local client_player = getPlayer()
+local Configs = ZomboidForge.Configs
 
+-- localy initialize player
+local client_player = getPlayer()
+local function initTLOU_OnGameStart(_, _)
+	client_player = getPlayer()
+end
+Events.OnCreatePlayer.Remove(initTLOU_OnGameStart)
+Events.OnCreatePlayer.Add(initTLOU_OnGameStart)
 
 --- INITIALIZATION FUNCTIONS ---
 
@@ -105,26 +116,28 @@ ZomboidForge.OnTick = function(tick)
     end
     local zombieList_size = zombieList:size()
 
-    -- Update things than need to be updated every ticks
-    local showNametag = SandboxVars.ZomboidForge.Nametags and ZFModOptions.NameTag.value
-    local zombiesOnCursor
-    local zombiesInFov = {}
+    --- HANDLE NAMETAG VARIABLES ---
+    local showNametag = SandboxVars.ZomboidForge.Nametags and Configs.ShowNametag
     if showNametag then
-        -- get zombies on cursor
-        zombiesOnCursor = ZomboidForge.GetZombiesOnCursor()
+        -- zombies on cursor
+        ZomboidForge.zombiesOnCursor = ZomboidForge.GetZombiesOnCursor(Configs.Radius)
 
-        -- get zombies in FOV in a key-table for easy check
+        -- visible zombies
+        local zombiesInFov = {}
         local spottedMovingObjects = client_player:getSpottedList()
 
-        if spottedMovingObjects then
-            for i = 0, spottedMovingObjects:size() - 1 do
-                local spottedMovingObject = spottedMovingObjects:get(i)
-                if instanceof(spottedMovingObject, "IsoZombie") then
-                    zombiesInFov[spottedMovingObject] = true
-                end
+        -- check the objects which are visible zombies
+        for i = 0, spottedMovingObjects:size() - 1 do
+            local spottedMovingObject = spottedMovingObjects:get(i)
+            if instanceof(spottedMovingObject, "IsoZombie") then
+                zombiesInFov[spottedMovingObject] = true
             end
         end
+
+        ZomboidForge.zombiesInFov = zombiesInFov
     end
+
+
 
     -- update every zombies
     for i = 0, zombieList_size - 1 do
@@ -145,10 +158,17 @@ ZomboidForge.OnTick = function(tick)
             -- update nametag, needs to be updated OnTick bcs if zombie
             -- gets staggered it doesn't get updated with OnZombieUpdate
             if showNametag and ZombieTable.name then
-                local isBehind = not zombiesInFov[zombie]
-                local valid = ZomboidForge.IsZombieValidForNametag(zombie,zombiesOnCursor,isBehind)
+                -- check if zombie should update
+                local isBehind = not ZomboidForge.zombiesInFov[zombie]
+                local isOnCursor = ZomboidForge.zombiesOnCursor[zombie]
+                local valid = isValidForNametag(zombie,isBehind,isOnCursor)
 
-                ZomboidForge.UpdateNametag(zombie,ZombieTable,tick,valid,isBehind)
+                local zombieNametag = ZomboidForge.nametagList[zombie]
+                if zombieNametag then
+                    zombieNametag:update(valid,isBehind)
+                elseif valid then
+                    ZomboidForge.nametagList[zombie] = ZombieNametag:new(zombie,ZombieTable)
+                end
             end
         end
     end

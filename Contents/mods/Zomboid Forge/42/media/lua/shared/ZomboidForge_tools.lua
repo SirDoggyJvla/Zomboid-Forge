@@ -15,6 +15,16 @@ Tools of ZomboidForge
 local ZomboidForge = require "ZomboidForge_module"
 local random = newrandom()
 
+-- caching
+
+-- localy initialize player
+local client_player = getPlayer()
+local function initTLOU_OnGameStart(_, _)
+	client_player = getPlayer()
+end
+Events.OnCreatePlayer.Remove(initTLOU_OnGameStart)
+Events.OnCreatePlayer.Add(initTLOU_OnGameStart)
+
 
 --- RANDOM ---
 
@@ -162,12 +172,11 @@ ZomboidForge.GetZombiesOnCursor = function(radius)
     mouseX = aiming and mouseX + 1.5 or mouseX
     mouseY = aiming and mouseY + 1.5 or mouseY
 
-    local r = radius
-
-    for z = 0,7 do
-        for x = mouseX - r, mouseX + r do
-            for y = mouseY - r, mouseY + r do
-                if (x - mouseX) * (x - mouseX) + (y - mouseY) * (y - mouseY) <= r * r then
+    -- TODO: this probably needs some tricks to optimize now that it checks for 65 levels instead of just 8
+    for z = -32,32 do
+        for x = mouseX - radius, mouseX + radius do
+            for y = mouseY - radius, mouseY + radius do
+                if (x - mouseX) * (x - mouseX) + (y - mouseY) * (y - mouseY) <= radius * radius then
                     local square = getSquare(x+ z*3, y+ z*3, z)
                     if square then
                         local movingObjects = square:getMovingObjects()

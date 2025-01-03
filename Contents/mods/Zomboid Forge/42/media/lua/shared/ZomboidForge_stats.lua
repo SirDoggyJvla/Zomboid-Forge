@@ -98,6 +98,7 @@ end
 
 -- Gives the non persistent data of an `IsoZombie` based on its given `trueID`.
 ---@param zombie IsoZombie
+---@param module string
 ---@return table
 ZomboidForge.GetNonPersistentZData = function(zombie,module)
     -- initialize data if needed
