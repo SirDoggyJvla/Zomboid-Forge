@@ -16,6 +16,8 @@ local ZomboidForge = require "ZomboidForge_module"
 local random = newrandom()
 
 -- caching
+local Configs = ZomboidForge.Configs
+
 
 -- localy initialize player
 local client_player = getPlayer()
@@ -129,17 +131,25 @@ end
 
 --- STAT RETRIEVE TOOLS ---
 
+---`data` can be a unique type or a table (array or key for weighted). If it's `nil` then return `nil`.
+---Also compares to `current` and skip if data chosen is already `current`.
+---@param data any
+---@param female boolean
+---@param current any
+---@return any
 ZomboidForge.ChoseInData = function(data,female,current)
+    -- skip nil
+    if data ~= nil then
+        return nil
+
     -- handle unique data
-    if type(data) ~= "table" then
-        if data == current then return nil end
+    elseif type(data) ~= "table" then
+        return data ~= current and data
 
-        return data
+    -- handle single entry array
     elseif #data == 1 then
-        local data = data[1]
-        if data == current then return nil end
-
-        return data
+        data = data[1]
+        return data ~= current and data
     end
 
     data = female and data.female or not female and data.male or data
@@ -165,7 +175,7 @@ ZomboidForge.GetZombiesOnCursor = function(radius)
     local zombiesOnCursor = {}
 
     local aiming = client_player:isAiming()
-    -- if not ZFModOptions.NoAimingNeeded.value and not aiming then return zombiesOnCursor end
+    if not Configs.NoAimingNeeded and not aiming then return zombiesOnCursor end
 
     -- get cursor coordinates
     local mouseX, mouseY = ISCoordConversion.ToWorld(getMouseXScaled(), getMouseYScaled(), 0)

@@ -72,6 +72,9 @@ end
 ZomboidForge.OnZombieUpdate = function(zombie)
     if not IsZombieValid(zombie) then return end
 
+    -- get zombie type
+    local ZType = ZomboidForge.GetZType(zombie)
+    local ZombieTable = ZomboidForge.ZTypes[ZType]
 
 
     --- DEBUGGING ---
@@ -92,6 +95,17 @@ ZomboidForge.OnZombieUpdate = function(zombie)
             zombiePannel = zombiePannel.."strength = "..tostring(zombie.strength).."\n"
             zombiePannel = zombiePannel.."speedType = "..tostring(zombie.speedType).."\n"
             zombiePannel = zombiePannel.."walkVariant = "..tostring(zombie.walkVariant).."\n"
+        end
+
+        if DEBUG_ZombiePannel.ZombieTable then
+            zombiePannel = zombiePannel.."\nZOMBIE TABLE STATS:\n"
+
+            zombiePannel = zombiePannel.."memory = "..tostring(ZombieTable.memory).."\n"
+            zombiePannel = zombiePannel.."sight = "..tostring(ZombieTable.sight).."\n"
+            zombiePannel = zombiePannel.."hearing = "..tostring(ZombieTable.hearing).."\n"
+            zombiePannel = zombiePannel.."cognition = "..tostring(ZombieTable.cognition).."\n"
+            zombiePannel = zombiePannel.."strength = "..tostring(ZombieTable.strength).."\n"
+            zombiePannel = zombiePannel.."toughness = "..tostring(ZombieTable.toughness).."\n"
         end
 
         zombie:addLineChatElement(zombiePannel)

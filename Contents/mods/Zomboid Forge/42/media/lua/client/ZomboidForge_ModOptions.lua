@@ -38,6 +38,14 @@ options:addTickBox(
     getText("IGUI_ZomboidForge_AlwaysOn_Tooltip")
 )
 
+-- NoAimingNeeded
+options:addTickBox(
+    "NoAimingNeeded",
+    getText("IGUI_ZomboidForge_NoAimingNeeded"),
+    false,
+    getText("IGUI_ZomboidForge_NoAimingNeeded_Tooltip")
+)
+
 -- WhenZombieIsTargeting
 options:addTickBox(
     "WhenZombieIsTargeting",
