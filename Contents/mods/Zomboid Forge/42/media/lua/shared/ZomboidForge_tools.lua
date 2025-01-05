@@ -125,7 +125,16 @@ ZomboidForge.isKeyTable = function(t)
     return false
 end
 
-
+---Check if `value` is in `array`.
+---@param array table
+---@param value any
+---@return boolean
+ZomboidForge.IsInArray = function(array,value)
+    for i = 1,#array do
+        if array[i] == value then return true end
+    end
+    return false
+end
 
 
 
@@ -156,8 +165,12 @@ ZomboidForge.ChoseInData = function(data,female,current)
 
     -- handle array
     if ZomboidForge.isArray(data) then
+        if current and ZomboidForge.IsInArray(data,current) then return nil end
+
         return data[random:random(1,#data)]
     end
+
+    if data[current] then return nil end
 
     -- handle key table, which means weighted
     return ZomboidForge.RandomWeighted(data)

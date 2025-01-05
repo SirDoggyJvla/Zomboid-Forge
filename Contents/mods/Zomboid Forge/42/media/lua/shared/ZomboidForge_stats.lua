@@ -142,15 +142,24 @@ ZomboidForge.InitializeZombie = function(zombie)
     --- SET VISUALS ---
 
     -- remove bandages
-    if ZombieTable.removeBandages then
+    if ZomboidForge.ChoseInData(ZombieTable.removeBandages,female) then
         ZomboidForge.RemoveBandages(zombie)
     end
 
-    
+    -- change visuals
+    local clothingVisuals = ZomboidForge.ChoseInData(ZombieTable.clothingVisuals,female)
+    if clothingVisuals then
+        ZomboidForge.ChangeClothings(zombie,clothingVisuals)
+    end
+
+
     -- necessary to show the various visual changes
     zombie:resetModel()
 
-    -- register the zombie data
+
+
+    --- REGISTER THE ZOMBIE DATA ---
+
     local nonPersistentZData = {
         ZType = ZType,
     }
@@ -215,38 +224,42 @@ ZomboidForge.RemoveBandages = function(zombie)
     end
 end
 
-ZomboidForge.ChangeVisuals = function(zombie,visualSettings,female)
+---Handle the clothing
+---@param zombie IsoZombie
+---@param clothingVisuals table
+---@param female boolean
+ZomboidForge.ChangeClothings = function(zombie,clothingVisuals,female)
     -- get visuals and skip if none (possibly useless safeguard)
     local visuals = zombie:getItemVisuals()
     if not visuals then return end
 
     -- remove new visuals
-    local locations = ZomboidForge.ChoseInData(visualSettings.remove,female)
+    local locations = ZomboidForge.ChoseInData(clothingVisuals.remove,female)
     if locations then
-        ZomboidForge.RemoveClothingVisuals(zombie,ZType,visuals,locations)
+        ZomboidForge.RemoveClothingVisuals(visuals,locations)
     end
 
     -- set new visuals
-    local locations = ZomboidForge.ChoseInData(visualSettings.set,female)
+    local locations = ZomboidForge.ChoseInData(clothingVisuals.set,female)
     if locations then
-        ZomboidForge.AddvisualSettings(visuals,locations,gender)
+        ZomboidForge.AddClothingVisuals(visuals,locations,female)
     end
 
     -- add dirt, blood or holes
-    local blood = visualSettings.bloody
+    local blood = clothingVisuals.bloody
     local bloody = ZomboidForge.ChoseInData(blood,female)
     bloody = type(bloody) == "boolean" and 1 or bloody
 
-    local dirt = visualSettings.dirty
+    local dirt = clothingVisuals.dirty
     local dirty = ZomboidForge.ChoseInData(dirt,female)
     dirty = type(dirty) == "boolean" and 1 or dirty
 
-    local hole = visualSettings.holes
+    local hole = clothingVisuals.holes
     local holes = ZomboidForge.ChoseInData(hole,female)
     holes = type(holes) == "boolean" and 1 or holes
 
     if bloody or dirty or holes then
-        ZomboidForge.ModifyvisualSettings(zombie,ZType,visuals,bloody,dirty,holes)
+        ZomboidForge.ModifyvisualSettings(visuals,bloody,dirty,holes)
     end
 end
 
@@ -262,14 +275,104 @@ ZomboidForge.RemoveClothingVisuals = function(visuals,locations)
             local scriptItem = item:getScriptItem()
             if scriptItem then
                 local location = scriptItem:getBodyLocation()
-                local location_remove = locations[location]
-                if location_remove then
+                if locations[location] then
                     visuals:remove(item)
                 end
             end
         end
     end
 end
+
+
+-- This function will replace or add clothing visuals from the `zombie` for each 
+-- clothing `locations` specified. 
+--
+--      `1: checks for bodyLocations that fit locations`
+--      `2: replaces bodyLocation item if not already the proper item`
+--      `3: add visuals that need to get added`
+---@param visuals ItemVisuals
+---@param locations table
+---@param female boolean
+ZomboidForge.AddClothingVisuals = function(visuals,locations,female)
+    -- replace visuals that are at the same body locations and check for already set visuals
+    local replace = {}
+    for i = visuals:size() - 1, 0, -1 do
+        local item = visuals:get(i)
+        local location = item:getScriptItem():getBodyLocation()
+
+        local locationChoice = locations[location]
+        if locationChoice then
+            local ZData = ZomboidForge.ChoseInData(locationChoice,female)
+
+            -- if data for this ZTypes found then
+            if ZData then
+                -- get current and do a choice
+                local scriptItem = item:getScriptItem()
+                local current = scriptItem:getFullName()
+
+                -- chose item if current not in ZData
+                local choice = ZomboidForge.ChoseInData(ZData,female,current)
+
+                -- verify data was found in the list to chose or current is not choice
+                if choice then
+                    item:setItemType(choice)
+                    item:setClothingItemName(choice)
+                end
+
+                -- location already exists so skip adding it
+                replace[location] = item
+            end
+        end
+    end
+
+    -- check for visuals that need to be added and add them
+    for location,item in pairs(locations) do
+        if not replace[location] then
+            local ZData = ZomboidForge.RetrieveDataFromTable(locations,location,gender)
+            local choice = ZomboidForge.ChoseInTable(ZData,item)
+
+            local itemVisual = ItemVisual.new()
+            itemVisual:setItemType(choice)
+            itemVisual:setClothingItemName(choice)
+            visuals:add(itemVisual)
+        end
+    end
+end
+
+-- This function will add dirt or/and blood to clothing visuals from the `zombie` for each clothing `locations`.
+---@param visuals ItemVisuals
+---@param bloody number
+---@param dirty number
+---@param holes number
+ZomboidForge.ModifyClothingVisuals = function(visuals,bloody,dirty,holes)
+    -- cycle backward to not have any fuck up in index whenever one is removed
+    for i = visuals:size() - 1, 0, -1 do
+        local item = visuals:get(i)
+        if item then
+            local scriptItem = item:getScriptItem()
+            if scriptItem then
+                local blood = scriptItem:getBloodClothingType()
+                if blood and blood:size() >= 1 then
+                    local coveredParts = BloodClothingType.getCoveredParts(blood)
+                    for j = 0, coveredParts:size() - 1 do
+                        local bloodPart = coveredParts:get(j)
+                        if bloody and item:getBlood(bloodPart) ~= bloody then
+                            item:setBlood(bloodPart,bloody)
+                        end
+                        if dirty and item:getDirt(bloodPart) ~= dirty then
+                            item:setDirt(bloodPart,dirty)
+                        end
+                        if holes and item:getHole(bloodPart) ~= holes then
+                            item:setHole(bloodPart)
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+
 
 
 --- ZType ---
