@@ -16,12 +16,25 @@ local ZomboidForge = require "ZomboidForge_module"
 require "ZomboidForge_stats"
 require "ZomboidForge_ModOptions"
 require "ISUI/ZombieNametag"
+require "Tools/DelayedActions"
 
--- caching
+--- CACHING ---
+
+-- delayed actions
+local UpdateDelayedActions = ZomboidForge.DelayedActions.UpdateDelayedActions
+
+-- Check for zombie valid
 local IsZombieValid = ZomboidForge.IsZombieValid
+
+-- Nametag updater
+local ZombieNametag = ZomboidForge.ZombieNametag
 local isValidForNametag = ZombieNametag.isValidForNametag
-local zombieList
+
+-- Mod Options
 local Configs = ZomboidForge.Configs
+
+-- other
+local zombieList
 
 -- localy initialize player
 local client_player = getPlayer()
@@ -76,7 +89,6 @@ ZomboidForge.OnZombieUpdate = function(zombie)
     local ZType = ZomboidForge.GetZType(zombie)
     local ZombieTable = ZomboidForge.ZTypes[ZType]
 
-
     --- DEBUGGING ---
     if not isDebugEnabled() then return end
 
@@ -124,6 +136,9 @@ local tickAmount = 0
 -- Added to `OnTick`.
 ---@param tick          int
 ZomboidForge.OnTick = function(tick)
+    -- update delayed actions
+    UpdateDelayedActions()
+
     -- initialize zombieList
     if not zombieList then
         zombieList = getCell():getZombieList()
@@ -163,11 +178,12 @@ ZomboidForge.OnTick = function(tick)
             local ZombieTable = ZomboidForge.ZTypes[ZType]
 
             -- run custom behavior functions for this zombie
-            -- if ZombieTable.customBehavior then
-            --     for j = 1,#ZombieTable.customBehavior do
-            --         ZomboidForge[ZombieTable.customBehavior[j]](zombie,ZType,ZombieTable,tick)
-            --     end
-            -- end
+            local onTick = ZombieTable.onTick
+            if onTick then
+                for j = 1,#onTick do
+                    onTick[j](zombie,ZType,ZombieTable,tick)
+                end
+            end
 
             -- update nametag, needs to be updated OnTick bcs if zombie
             -- gets staggered it doesn't get updated with OnZombieUpdate
@@ -186,4 +202,31 @@ ZomboidForge.OnTick = function(tick)
             end
         end
     end
+end
+
+---Handle the death of custom zombies.
+---@param zombie IsoZombie
+ZomboidForge.OnZombieDead = function(zombie)
+    if not IsZombieValid(zombie) then return end
+
+
+    -- get zombie data
+    local nonPersistentZData = ZomboidForge.GetNonPersistentZData(zombie)
+    local ZType = nonPersistentZData.ZType
+    local ZombieTable = ZomboidForge.ZTypes[ZType]
+
+    -- run custom death functions
+    local onZombieDead = ZombieTable.onZombieDead
+    if onZombieDead then
+        -- run custom behavior functions for this zombie
+        for i = 1,#onZombieDead do
+            onZombieDead[i](zombie,ZType,ZombieTable)
+        end
+    end
+
+    -- reset emitters
+    zombie:getEmitter():stopAll()
+
+    -- delete zombie data
+    ZomboidForge.ResetNonPersistentZData(zombie)
 end

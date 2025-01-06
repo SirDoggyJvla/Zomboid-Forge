@@ -34,8 +34,8 @@ Events.OnCreatePlayer.Add(initTLOU_OnGameStart)
 
 
 
-ZombieNametag = {}
-
+ZomboidForge.ZombieNametag = {}
+local ZombieNametag = ZomboidForge.ZombieNametag
 
 -- Checks if the `zombie` is valid to have its nametag displayed for local player.
 ---@param zombie IsoZombie
@@ -75,6 +75,9 @@ ZombieNametag.isValidForNametag = function(zombie,isBehind,isOnCursor)
     return false
 end
 
+---Update the nametag, and tick down the counter based on current situation.
+---@param valid boolean
+---@param isBehind boolean
 function ZombieNametag:update(valid,isBehind)
     if valid then
         self.tick = self.duration
@@ -126,6 +129,7 @@ function ZombieNametag:update(valid,isBehind)
     end
 end
 
+---Stop handling this zombie's nametag.
 function ZombieNametag:stop()
     nametagList[self.zombie] = nil
 end

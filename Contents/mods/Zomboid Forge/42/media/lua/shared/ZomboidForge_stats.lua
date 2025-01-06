@@ -14,6 +14,11 @@ Debuging tools used for ZomboidForge
 -- requirements
 local ZomboidForge = require "ZomboidForge_module"
 
+--- CACHING ---
+
+-- delayed actions
+local AddNewAction = ZomboidForge.DelayedActions.AddNewAction
+
 -- global caching
 local Long = Long
 local toUnsignedString = Long.toUnsignedString --[[@as Function]]
@@ -119,7 +124,16 @@ ZomboidForge.GetNonPersistentZData = function(zombie,module)
     end
 end
 
-
+-- Gives the non persistent data of an `IsoZombie` based on its given `trueID`.
+---@param zombie IsoZombie
+---@param module string
+ZomboidForge.ResetNonPersistentZData = function(zombie,module)
+    if not module then
+        ZomboidForge.NonPersistentZData[zombie] = nil
+    else
+        ZomboidForge.NonPersistentZData[zombie][module] = nil
+    end
+end
 
 
 
@@ -141,20 +155,7 @@ ZomboidForge.InitializeZombie = function(zombie)
 
     --- SET VISUALS ---
 
-    -- remove bandages
-    if ZomboidForge.ChoseInData(ZombieTable.removeBandages,female) then
-        ZomboidForge.RemoveBandages(zombie)
-    end
-
-    -- change visuals
-    local clothingVisuals = ZomboidForge.ChoseInData(ZombieTable.clothingVisuals,female)
-    if clothingVisuals then
-        ZomboidForge.ChangeClothings(zombie,clothingVisuals)
-    end
-
-
-    -- necessary to show the various visual changes
-    zombie:resetModel()
+    AddNewAction(ZomboidForge.SetVisuals,1,{zombie,ZombieTable,female})
 
 
 
@@ -172,7 +173,7 @@ end
 ---@param ZombieTable table
 ---@param female boolean
 ZomboidForge.SetStats = function(zombie,ZombieTable,female)
-    -- set every stats for the zombie
+    -- update sandbox options with new zombie stats
     for sandboxOptionName,sandboxOptionData in pairs(ZomboidForge.SandboxOptionsStats) do
         local value = ZomboidForge.ChoseInData(ZombieTable[sandboxOptionName],female)
         getSandboxOptions():set(sandboxOptionData.setSandboxOption,value)
@@ -188,6 +189,23 @@ ZomboidForge.SetStats = function(zombie,ZombieTable,female)
         local choice = ZomboidForge.ChoseInData(walkType,female)
         zombie:setWalkType(choice)
     end
+end
+
+ZomboidForge.SetVisuals = function(zombie,ZombieTable,female)
+    -- remove bandages
+    if ZomboidForge.ChoseInData(ZombieTable.removeBandages,female) then
+        ZomboidForge.RemoveBandages(zombie)
+    end
+
+    -- change visuals
+    local clothingVisuals = ZombieTable.clothingVisuals
+    if clothingVisuals then
+        ZomboidForge.ChangeClothings(zombie,clothingVisuals,female)
+    end
+
+
+    -- necessary to show the various visual changes
+    zombie:resetModel()
 end
 
 ---Unique datas are different from the classic Zombie Lore sandbox options.
@@ -234,13 +252,13 @@ ZomboidForge.ChangeClothings = function(zombie,clothingVisuals,female)
     if not visuals then return end
 
     -- remove new visuals
-    local locations = ZomboidForge.ChoseInData(clothingVisuals.remove,female)
+    local locations = clothingVisuals.remove
     if locations then
-        ZomboidForge.RemoveClothingVisuals(visuals,locations)
+        ZomboidForge.RemoveClothingVisuals(visuals,locations,female)
     end
 
     -- set new visuals
-    local locations = ZomboidForge.ChoseInData(clothingVisuals.set,female)
+    local locations = clothingVisuals.set
     if locations then
         ZomboidForge.AddClothingVisuals(visuals,locations,female)
     end
@@ -259,7 +277,7 @@ ZomboidForge.ChangeClothings = function(zombie,clothingVisuals,female)
     holes = type(holes) == "boolean" and 1 or holes
 
     if bloody or dirty or holes then
-        ZomboidForge.ModifyvisualSettings(visuals,bloody,dirty,holes)
+        ZomboidForge.ModifyClothingVisuals(visuals,bloody,dirty,holes)
     end
 end
 
@@ -267,7 +285,7 @@ end
 -- This function will remove clothing visuals from the `zombie` for each clothing `locations`.
 ---@param visuals ItemVisuals
 ---@param locations table
-ZomboidForge.RemoveClothingVisuals = function(visuals,locations)
+ZomboidForge.RemoveClothingVisuals = function(visuals,locations,female)
     -- cycle backward to not have any fuck up in index whenever one is removed
     for i = visuals:size() - 1, 0, -1 do
         local item = visuals:get(i)
@@ -275,7 +293,7 @@ ZomboidForge.RemoveClothingVisuals = function(visuals,locations)
             local scriptItem = item:getScriptItem()
             if scriptItem then
                 local location = scriptItem:getBodyLocation()
-                if locations[location] then
+                if ZomboidForge.ChoseInData(locations[location],female) then
                     visuals:remove(item)
                 end
             end
@@ -328,8 +346,7 @@ ZomboidForge.AddClothingVisuals = function(visuals,locations,female)
     -- check for visuals that need to be added and add them
     for location,item in pairs(locations) do
         if not replace[location] then
-            local ZData = ZomboidForge.RetrieveDataFromTable(locations,location,gender)
-            local choice = ZomboidForge.ChoseInTable(ZData,item)
+            local choice = ZomboidForge.ChoseInData(item,female)
 
             local itemVisual = ItemVisual.new()
             itemVisual:setItemType(choice)

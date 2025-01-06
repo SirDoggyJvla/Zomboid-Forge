@@ -116,8 +116,6 @@ options.apply = function(self)
                 Configs[(k.."_"..tostring(i))] = v:getValue(i)
             end
         elseif v.type ~= "button" then
-            print(k)
-            print(v)
             Configs[k] = v:getValue()
         end
     end

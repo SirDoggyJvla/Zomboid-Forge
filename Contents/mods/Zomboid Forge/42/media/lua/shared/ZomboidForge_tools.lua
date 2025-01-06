@@ -148,7 +148,7 @@ end
 ---@return any
 ZomboidForge.ChoseInData = function(data,female,current)
     -- skip nil
-    if data ~= nil then
+    if data == nil then
         return nil
 
     -- handle unique data
