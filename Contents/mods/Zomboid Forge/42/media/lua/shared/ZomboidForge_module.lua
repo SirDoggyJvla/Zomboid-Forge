@@ -13,12 +13,18 @@ Module of ZomboidForge
 
 -- Custom event to adding your own custom ZTypes
 LuaEventManager.AddEvent("OnLoadZTypes")
+LuaEventManager.AddEvent("OnZombieHitCharacter")
+LuaEventManager.AddEvent("OnZombieThump")
 
 local ZomboidForge = {
     TrueID = {},
     HatFallen = {},
     NonPersistentZData = {},
     ZTypes = {},
+
+    --- INITIALIZING ZOMBIE ---
+    ZombiesWaitingForInitialization = {},
+    ZombiesChangeVisualsNextTick = {},
 
 
     --- MOD OPTIONS ---
@@ -217,6 +223,69 @@ local ZomboidForge = {
             end,
         },
 
+        ["HP"] = {
+            current = function(zombie)
+                return zombie:getHealth()
+            end,
+            apply = function(zombie,choice)
+                zombie:setHealth(choice)
+            end,
+        },
+
+        ["fireKillRate"] = {
+            current = function(zombie)
+                return zombie:getFireKillRate()
+            end,
+            apply = function(zombie,choice)
+                zombie:setFireKillRate(choice)
+            end,
+        },
+
+        ["onlyJawStab"] = {
+            current = function(zombie)
+                return zombie:isOnlyJawStab()
+            end,
+            apply = function(zombie,choice)
+                zombie:setOnlyJawStab(choice)
+            end,
+        },
+
+        ["canCrawlUnderVehicles"] = {
+            current = function(zombie)
+                return zombie:isCanCrawlUnderVehicle()
+            end,
+            apply = function(zombie,choice)
+                zombie:setCanCrawlUnderVehicle(choice)
+            end,
+        },
+
+        ["noDamage"] = {
+            current = function(zombie)
+                return zombie:getNoDamage()
+            end,
+            apply = function(zombie,choice)
+                zombie:setNoDamage(choice)
+            end,
+        },
+
+        ["avoidDamage"] = {
+            current = function(zombie)
+                return zombie:avoidDamage()
+            end,
+            apply = function(zombie,choice)
+                zombie:setAvoidDamage(choice)
+            end,
+        },
+
+        ["noTeeth"] = {
+            current = function(zombie)
+                return zombie:isNoTeeth()
+            end,
+            apply = function(zombie,choice)
+                zombie:setNoTeeth(choice)
+            end,
+        },
+
         ["animationVariable"] = {
             apply = function(zombie,choice)
                 if not zombie:getVariableBoolean(choice) then
@@ -251,6 +320,7 @@ local ZomboidForge = {
         Stats = false,
         RegisterNametags = false,
         ZombieTable = false,
+        ShowHealth = false,
     },
 }
 

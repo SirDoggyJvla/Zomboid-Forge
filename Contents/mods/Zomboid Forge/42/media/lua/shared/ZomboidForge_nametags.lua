@@ -16,7 +16,6 @@ local ZomboidForge = require "ZomboidForge_module"
 require "ISUI/ZombieNametag"
 
 -- caching
-local ZombieNametag = ZombieNametag
 local Configs = ZomboidForge.Configs
 
 -- localy initialize player

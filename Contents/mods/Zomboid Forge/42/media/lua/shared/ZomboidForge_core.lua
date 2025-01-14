@@ -19,9 +19,12 @@ require "ISUI/ZombieNametag"
 require "Tools/DelayedActions"
 
 --- CACHING ---
+-- initialize zombies
+local InitializeZombiesVisuals = ZomboidForge.InitializeZombiesVisuals
 
 -- delayed actions
 local UpdateDelayedActions = ZomboidForge.DelayedActions.UpdateDelayedActions
+local AddNewDelayedAction = ZomboidForge.DelayedActions.AddNewAction
 
 -- Check for zombie valid
 local IsZombieValid = ZomboidForge.IsZombieValid
@@ -44,7 +47,12 @@ end
 Events.OnCreatePlayer.Remove(initTLOU_OnGameStart)
 Events.OnCreatePlayer.Add(initTLOU_OnGameStart)
 
+
+
+
+--[[ ================================================ ]]--
 --- INITIALIZATION FUNCTIONS ---
+--[[ ================================================ ]]--
 
 --- OnLoad function to initialize the mod
 ZomboidForge.OnLoad = function()
@@ -64,23 +72,43 @@ ZomboidForge.OnLoad = function()
     for _,ZombieTable in pairs(ZomboidForge.ZTypes) do
         ZomboidForge.TotalChance = ZomboidForge.TotalChance + ZombieTable.chance
     end
+
+    if isDebugEnabled() then
+        print("ZTypes loaded.")
+    end
 end
 
 
+
+
+--[[ ================================================ ]]--
 --- INITIALIZE ZOMBIE
+--[[ ================================================ ]]--
 
 ---Detect when a zombie gets loaded in and initialize it.
 ---@param zombie IsoZombie
 ZomboidForge.OnZombieCreate = function(zombie)
     if not IsZombieValid(zombie) then return end
 
-    local nonPersistentZData = ZomboidForge.InitializeZombie(zombie)
-    local ZType = nonPersistentZData.ZType
-    local ZombieTable = ZomboidForge.ZTypes[ZType]
+    -- delay initialization until pID is properly initialized by the game
+    AddNewDelayedAction({
+        fct = ZomboidForge.InitializeZombie,
+        args = {zombie},
+        _ticksDelay = 1,
+    })
+
+    -- delay setting visuals
+    table.insert(ZomboidForge.ZombiesWaitingForInitialization,zombie)
 end
 
 
----
+
+--[[ ================================================ ]]--
+--- ON ZOMBIE UPDATE ---
+--[[ ================================================ ]]--
+
+
+---Handle everything related to zombie updates.
 ---@param zombie IsoZombie
 ZomboidForge.OnZombieUpdate = function(zombie)
     if not IsZombieValid(zombie) then return end
@@ -88,56 +116,71 @@ ZomboidForge.OnZombieUpdate = function(zombie)
     -- get zombie type
     local ZType = ZomboidForge.GetZType(zombie)
     local ZombieTable = ZomboidForge.ZTypes[ZType]
+    local nonPersistentZData = ZomboidForge.GetNonPersistentZData(zombie)
 
-    --- DEBUGGING ---
-    if not isDebugEnabled() then return end
-
-    --- ZOMBIE PANNEL ---
-    local DEBUG_ZombiePannel = ZomboidForge.DEBUG_ZombiePannel
-    if ZomboidForge.CountTrueInTable(DEBUG_ZombiePannel) > 0 then
-        local zombiePannel = ""
-
-        if DEBUG_ZombiePannel.Stats then
-            zombiePannel = zombiePannel.."\nSTATS:\n"
-
-            zombiePannel = zombiePannel.."memory = "..tostring(zombie.memory).."\n"
-            zombiePannel = zombiePannel.."sight = "..tostring(zombie.sight).."\n"
-            zombiePannel = zombiePannel.."hearing = "..tostring(zombie.hearing).."\n"
-            zombiePannel = zombiePannel.."cognition = "..tostring(zombie.cognition).."\n"
-            zombiePannel = zombiePannel.."strength = "..tostring(zombie.strength).."\n"
-            zombiePannel = zombiePannel.."speedType = "..tostring(zombie.speedType).."\n"
-            zombiePannel = zombiePannel.."walkVariant = "..tostring(zombie.walkVariant).."\n"
+    -- run custom onZombieUpdate function
+    local onZombieUpdate = ZombieTable.onZombieUpdate
+    if onZombieUpdate then
+        for j = 1,#onZombieUpdate do
+            onZombieUpdate[j](zombie,ZType,ZombieTable)
         end
+    end
 
-        if DEBUG_ZombiePannel.ZombieTable then
-            zombiePannel = zombiePannel.."\nZOMBIE TABLE STATS:\n"
 
-            zombiePannel = zombiePannel.."memory = "..tostring(ZombieTable.memory).."\n"
-            zombiePannel = zombiePannel.."sight = "..tostring(ZombieTable.sight).."\n"
-            zombiePannel = zombiePannel.."hearing = "..tostring(ZombieTable.hearing).."\n"
-            zombiePannel = zombiePannel.."cognition = "..tostring(ZombieTable.cognition).."\n"
-            zombiePannel = zombiePannel.."strength = "..tostring(ZombieTable.strength).."\n"
-            zombiePannel = zombiePannel.."toughness = "..tostring(ZombieTable.toughness).."\n"
+
+    --- DETECTING THUMP ---
+
+    if ZombieTable.onZombieThump then
+        -- run code if zombie has thumping target
+        local thumped = zombie:getThumpTarget()
+        if thumped then
+            -- check for thump
+            -- update thumped only if zombie is thumping
+            -- getThumpTarget outputs the target as long as the zombie is in thumping animation
+            -- but we want to make sure we run onThump only if a hit is sent
+            local timeThumping = zombie:getTimeThumping()
+            if nonPersistentZData.thumpCheck ~= timeThumping and timeThumping ~= 0 then
+                nonPersistentZData.thumpCheck = timeThumping
+
+                LuaEventManager.triggerEvent("OnZombieThump",zombie,ZType,ZombieTable,thumped,timeThumping)
+            end
         end
+    end
 
-        zombie:addLineChatElement(zombiePannel)
+
+
+    --- DETECTING ZOMBIE ATTACKS ---
+
+    local target = zombie:getTarget()
+    local attackOutcome = nonPersistentZData.attackOutcome
+    -- local currentAttackOutcome = zombie:getVariableString("AttackOutcome")
+    if target then
+        local currentAttackOutcome = zombie:getVariableString("AttackOutcome")
+        if currentAttackOutcome ~= "" and attackOutcome ~= currentAttackOutcome then
+            nonPersistentZData.attackOutcome = currentAttackOutcome
+            triggerEvent("OnZombieHitCharacter",zombie,target,currentAttackOutcome)
+        end
+    elseif attackOutcome then
+        nonPersistentZData.attackOutcome = nil
     end
 end
 
 
-local tickAmount = 0
--- Handles the updating of the stats of every zombies as well as initializing them. zombieList is initialized
--- for the client and doesn't need to be changed after. The code goes through every zombie index and updates
--- the stats of each zombies at a rate of every `time_before_update` seconds and one after the other. A formula was made to update
--- zombies based on that time
---
--- The part updating one zombie per tick was made by `Albion`.
---
--- Added to `OnTick`.
----@param tick          int
+
+
+
+--[[ ================================================ ]]--
+--- ON TICK ---
+--[[ ================================================ ]]--
+
+---Handles nametag and updating delayed actions.
+---@param tick int
 ZomboidForge.OnTick = function(tick)
     -- update delayed actions
     UpdateDelayedActions()
+
+    -- update zombies that need to get initialized
+    InitializeZombiesVisuals()
 
     -- initialize zombieList
     if not zombieList then
@@ -145,7 +188,7 @@ ZomboidForge.OnTick = function(tick)
     end
     local zombieList_size = zombieList:size()
 
-    --- HANDLE NAMETAG VARIABLES ---
+    --- UPDATE NAMETAG VARIABLES ---
     local showNametag = SandboxVars.ZomboidForge.Nametags and Configs.ShowNametag
     if showNametag then
         -- zombies on cursor
@@ -169,50 +212,62 @@ ZomboidForge.OnTick = function(tick)
 
 
     -- update every zombies
-    for i = 0, zombieList_size - 1 do
+    for i = 0, zombieList_size - 1 do repeat
         -- get zombie and verify it's valid
         local zombie = zombieList:get(i)
-        if ZomboidForge.IsZombieValid(zombie) and zombie:isAlive() then
-            -- get zombie data
-            local ZType = ZomboidForge.GetZType(zombie)
-            local ZombieTable = ZomboidForge.ZTypes[ZType]
+        if not ZomboidForge.IsZombieValid(zombie) or not zombie:isAlive() then break end
 
-            -- run custom behavior functions for this zombie
-            local onTick = ZombieTable.onTick
-            if onTick then
-                for j = 1,#onTick do
-                    onTick[j](zombie,ZType,ZombieTable,tick)
-                end
-            end
+        -- get zombie data
+        local ZType = ZomboidForge.GetZType(zombie)
+        local ZombieTable = ZomboidForge.ZTypes[ZType]
 
-            -- update nametag, needs to be updated OnTick bcs if zombie
-            -- gets staggered it doesn't get updated with OnZombieUpdate
-            if showNametag and ZombieTable.name then
-                -- check if zombie should update
-                local isBehind = not ZomboidForge.zombiesInFov[zombie]
-                local isOnCursor = ZomboidForge.zombiesOnCursor[zombie]
-                local valid = isValidForNametag(zombie,isBehind,isOnCursor)
+        --- ONTICK CUSTOM BEHAVIOR ---
 
-                local zombieNametag = ZomboidForge.nametagList[zombie]
-                if zombieNametag then
-                    zombieNametag:update(valid,isBehind)
-                elseif valid then
-                    ZomboidForge.nametagList[zombie] = ZombieNametag:new(zombie,ZombieTable)
-                end
+        -- run custom behavior functions for this zombie
+        local onTick = ZombieTable.onTick
+        if onTick then
+            for j = 1,#onTick do
+                onTick[j](zombie,ZType,ZombieTable,tick)
             end
         end
-    end
+
+        if isDebugEnabled() then ZomboidForge.HandleDebuggingOnTick(zombie) end
+
+        --- NAMETAG ---
+
+        -- update nametag, needs to be updated OnTick bcs if zombie
+        -- gets staggered it doesn't get updated with OnZombieUpdate
+        if not showNametag or not ZombieTable.name then break end
+
+        -- check if zombie should update
+        local isBehind = not ZomboidForge.zombiesInFov[zombie]
+        local isOnCursor = ZomboidForge.zombiesOnCursor[zombie]
+        local valid = isValidForNametag(zombie,isBehind,isOnCursor)
+
+        local zombieNametag = ZomboidForge.nametagList[zombie]
+        if zombieNametag then
+            zombieNametag:update(valid,isBehind)
+        elseif valid then
+            ZomboidForge.nametagList[zombie] = ZombieNametag:new(zombie,ZombieTable)
+        end
+    until true end
 end
+
+
+
+--[[ ================================================ ]]--
+--- ON DEATH ---
+--[[ ================================================ ]]--
+
 
 ---Handle the death of custom zombies.
 ---@param zombie IsoZombie
 ZomboidForge.OnZombieDead = function(zombie)
     if not IsZombieValid(zombie) then return end
 
-
     -- get zombie data
     local nonPersistentZData = ZomboidForge.GetNonPersistentZData(zombie)
-    local ZType = nonPersistentZData.ZType
+    local ZType = ZomboidForge.GetZType(zombie)
     local ZombieTable = ZomboidForge.ZTypes[ZType]
 
     -- run custom death functions
@@ -229,4 +284,120 @@ ZomboidForge.OnZombieDead = function(zombie)
 
     -- delete zombie data
     ZomboidForge.ResetNonPersistentZData(zombie)
+end
+
+
+
+--[[ ================================================ ]]--
+--- ATTACK REACTION FUNCTION ---
+--[[ ================================================ ]]--
+
+---Triggers whenever a character hits another character and we ignore the case where victim is not a zombie.
+---Delay a check after zombie taking damage.
+---@param attacker IsoGameCharacter
+---@param zombie IsoGameCharacter
+---@param handWeapon HandWeapon
+---@param damage float
+ZomboidForge.OnCharacterHitZombie = function(attacker, zombie, handWeapon, damage)
+    if not instanceof(zombie,"IsoZombie") or not zombie:isAlive() then return end
+    ---@cast zombie IsoZombie
+
+    -- get zombie informations
+    local nonPersistentZData = ZomboidForge.GetNonPersistentZData(zombie)
+    local ZType = ZomboidForge.GetZType(zombie)
+    local ZombieTable = ZomboidForge.ZTypes[ZType]
+
+    -- note HP
+    local HP = zombie:getHealth()
+    nonPersistentZData.HP = HP
+
+    -- checks if player is handpushing zombie or barefoot attack
+    -- this is done by checking the weapon are hands and if damage is close to 0
+    local handPush = false
+    local footStomp = false
+    if handWeapon:getFullType() == "Base.BareHands" then
+        -- hand push
+        if math.floor(damage) <= 0 then
+            handPush = true
+
+        -- foot stomp
+        else
+            footStomp = true
+        end
+    end
+
+    -- stop knife death if should be immune
+    if zombie:isKnifeDeath() and ZomboidForge.ChoseInData(ZombieTable.jawStabImmune,zombie:isFemale()) then
+        zombie:setKnifeDeath(false)
+        zombie:setAvoidDamage(true)
+    end
+
+    AddNewDelayedAction({
+        fct = ZomboidForge.AfterZombieGetHit,
+        args = {zombie},
+        _ticksDelay = 1,
+    })
+
+    -- run custom behavior functions for this zombie
+    local onCharacterHitZombie = ZombieTable.onCharacterHitZombie
+    if onCharacterHitZombie then
+        for i = 1,#onCharacterHitZombie do
+            onCharacterHitZombie[i](zombie,ZType,ZombieTable,attacker,handWeapon,HP,damage,handPush,footStomp)
+        end
+    end
+end
+
+ZomboidForge.AfterZombieGetHit = function(zombie)
+    if not zombie:isAlive() then return end
+    local damage = ZomboidForge.GetNonPersistentZData(zombie).HP - zombie:getHealth()
+
+    local ZType = ZomboidForge.GetZType(zombie)
+    local ZombieTable = ZomboidForge.ZTypes[ZType]
+
+    -- show nametag
+    if SandboxVars.ZomboidForge.Nametags and Configs.ShowNametag then
+        ZomboidForge.nametagList[zombie] = ZombieNametag:new(zombie,ZombieTable)
+    end
+
+    -- run custom behavior functions for this zombie
+    local afterZombieGetHit = ZombieTable.afterZombieGetHit
+    if afterZombieGetHit then
+        for i = 1,#afterZombieGetHit do
+            afterZombieGetHit[i](zombie,ZType,ZombieTable,damage)
+        end
+    end
+end
+
+
+ZomboidForge.OnZombieHitCharacter = function(zombie,victim,attackOutcome)
+    local ZType = ZomboidForge.GetZType(zombie)
+    local ZombieTable = ZomboidForge.ZTypes[ZType]
+
+    -- show nametag
+    if attackOutcome == "start" and SandboxVars.ZomboidForge.Nametags and Configs.ShowNametag and Configs.WhenZombieIsAttacking then
+        ZomboidForge.nametagList[zombie] = ZombieNametag:new(zombie,ZombieTable)
+    end
+
+    -- run custom behavior functions for this zombie
+    local onZombieHitCharacter = ZombieTable.onZombieHitCharacter
+    if onZombieHitCharacter then
+        for i = 1,#onZombieHitCharacter do
+            onZombieHitCharacter[i](zombie,victim,attackOutcome,victim:getHitReaction())
+        end
+    end
+end
+
+
+---Trigger custom behavior related to zombies thumping.
+---@param zombie IsoZombie
+---@param ZType string
+---@param ZombieTable table
+---@param thumped any
+---@param timeThumping integer
+ZomboidForge.OnZombieThump = function(zombie,ZType,ZombieTable,thumped,timeThumping)
+    -- run custom behavior functions for this zombie
+    local onZombieThump = ZombieTable.onZombieThump
+    for i = 1,#onZombieThump do
+        onZombieThump[i](zombie,ZType,ZombieTable,thumped,timeThumping)
+    end
 end

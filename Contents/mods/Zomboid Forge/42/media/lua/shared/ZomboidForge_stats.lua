@@ -13,11 +13,9 @@ Debuging tools used for ZomboidForge
 
 -- requirements
 local ZomboidForge = require "ZomboidForge_module"
+require "Tools/DelayedActions"
 
 --- CACHING ---
-
--- delayed actions
-local AddNewAction = ZomboidForge.DelayedActions.AddNewAction
 
 -- global caching
 local Long = Long
@@ -69,7 +67,7 @@ end
 -- through this function detects if it's the trueID.
 ---@param zombie IsoZombie
 ---@return integer trueID
-ZomboidForge.getTrueID = function(zombie)
+ZomboidForge.GetTrueID = function(zombie)
     -- retrieve zombie pID
     local pID = zombie:getPersistentOutfitID()
 
@@ -101,9 +99,9 @@ ZomboidForge.getTrueID = function(zombie)
     return trueID
 end
 
--- Gives the non persistent data of an `IsoZombie` based on its given `trueID`.
+-- Gives the non persistent data of an `IsoZombie`.
 ---@param zombie IsoZombie
----@param module string
+---@param module string|nil
 ---@return table
 ZomboidForge.GetNonPersistentZData = function(zombie,module)
     -- initialize data if needed
@@ -124,7 +122,7 @@ ZomboidForge.GetNonPersistentZData = function(zombie,module)
     end
 end
 
--- Gives the non persistent data of an `IsoZombie` based on its given `trueID`.
+-- Resets the non persistent data of an `IsoZombie`.
 ---@param zombie IsoZombie
 ---@param module string
 ZomboidForge.ResetNonPersistentZData = function(zombie,module)
@@ -139,33 +137,98 @@ end
 
 --- SETTING ZOMBIE
 
+
 ZomboidForge.InitializeZombie = function(zombie)
-    -- get zombie type
+    --- INITIALIZE ZOMBIE DATA ---
     local ZType = ZomboidForge.GetZType(zombie)
     local ZombieTable = ZomboidForge.ZTypes[ZType]
-    local female = zombie:isFemale()
 
-
-
-    --- SET STATS ---
-
-    ZomboidForge.SetStats(zombie,ZombieTable,female)
-
-
-
-    --- SET VISUALS ---
-
-    AddNewAction(ZomboidForge.SetVisuals,1,{zombie,ZombieTable,female})
-
-
-
-    --- REGISTER THE ZOMBIE DATA ---
-
-    local nonPersistentZData = {
+    ZomboidForge.NonPersistentZData[zombie] = {
         ZType = ZType,
     }
-    ZomboidForge.NonPersistentZData[zombie] = nonPersistentZData
-    return nonPersistentZData
+
+    -- get zombie informations
+    local female = zombie:isFemale()
+
+    --- SET STATS ---
+    ZomboidForge.SetStats(zombie,ZombieTable,female)
+
+    -- run custom onCreate function
+    local onCreate = ZombieTable.onCreate
+    if onCreate then
+        for j = 1,#onCreate do
+            onCreate[j](zombie,ZType,ZombieTable)
+        end
+    end
+end
+
+
+---Initialize the zombies that are waiting for initialization only when their model was first activated.
+---This is required because setting any visuals, clothings etc will get reset right after the first model activation.
+ZomboidForge.InitializeZombiesVisuals = function()
+    local ZombiesWaitingForInitialization = ZomboidForge.ZombiesWaitingForInitialization
+    local ZombiesChangeVisualsNextTick = ZomboidForge.ZombiesChangeVisualsNextTick
+
+    --- DETECT A ZOMBIE THAT IS VALID FOR SETTING VISUALS
+
+    for i = #ZombiesWaitingForInitialization,1,-1 do repeat
+        -- get zombie
+        local zombie = ZombiesWaitingForInitialization[i]
+
+        -- verify if valid for visuals
+        if not zombie:hasActiveModel() then
+            -- stop checking this zombie, it got recycled
+            if zombie:getPersistentOutfitID() == 0 then
+                table.remove(ZombiesWaitingForInitialization,i)
+            end
+            break
+        end
+
+        table.insert(ZombiesChangeVisualsNextTick,zombie)
+
+        -- zombie doesn't need to be set later
+        table.remove(ZombiesWaitingForInitialization,i)
+    until true end
+
+
+
+    --- SET VISUALS FOR VALID ZOMBIES ---
+
+    for i = #ZombiesChangeVisualsNextTick,1,-1 do repeat
+        -- get zombie
+        local zombie = ZombiesChangeVisualsNextTick[i]
+
+        -- stop checking this zombie, it got recycled
+        if zombie:getPersistentOutfitID() == 0 then
+            table.remove(ZombiesChangeVisualsNextTick,i)
+            break
+        end
+
+        -- initialize zombie stats
+        ZomboidForge.InitializeZombieVisuals(zombie)
+
+        -- zombie doesn't need to be set later
+        table.remove(ZombiesChangeVisualsNextTick,i)
+    until true end
+end
+
+
+---Initialize the zombie visuals and other data and informations.
+---@param zombie IsoZombie
+ZomboidForge.InitializeZombieVisuals = function(zombie)
+    --- INITIALIZE ZOMBIE DATA ---
+    local nonPersistentZData = ZomboidForge.GetNonPersistentZData(zombie)
+    local ZType = ZomboidForge.GetZType(zombie)
+    local ZombieTable = ZomboidForge.ZTypes[ZType]
+
+    -- get zombie informations
+    local female = zombie:isFemale()
+
+    --- SET VISUALS ---
+    ZomboidForge.SetVisuals(zombie,ZombieTable,female)
+
+    --- SET UNIQUE STATS ---
+    ZomboidForge.SetUniqueData(zombie,ZombieTable,female)
 end
 
 ---Sets the classic Zombie Lore sandbox option stats as well as walktype which can have various options.
@@ -192,6 +255,8 @@ ZomboidForge.SetStats = function(zombie,ZombieTable,female)
 end
 
 ZomboidForge.SetVisuals = function(zombie,ZombieTable,female)
+    local nonPersistentZData = ZomboidForge.GetNonPersistentZData(zombie)
+    nonPersistentZData.visualsSet = true
     -- remove bandages
     if ZomboidForge.ChoseInData(ZombieTable.removeBandages,female) then
         ZomboidForge.RemoveBandages(zombie)
@@ -213,21 +278,19 @@ end
 ---@param ZombieTable table
 ---@param female boolean
 ZomboidForge.SetUniqueData = function(zombie,ZombieTable,female)
+    -- set ZombieData
     for key,data in pairs(ZomboidForge.ZombieDataToSet) do
-        -- access the data and skip if none exists for this ZType
-        local ZData = ZombieTable[key]
-        if ZData ~= nil then
-            -- retrieve current, if a function for current exists for this data type
-            local current = data.current and data.current(zombie)
-
-            -- retrieve the choice and apply it
-            local choice = ZomboidForge.ChoseInData(ZData,female,current)
-            if choice ~= nil then
-                data.apply(zombie,choice)
-            end
+        local current_fct = data.current
+        local current = current_fct and current_fct(zombie)
+        local choice = ZomboidForge.ChoseInData(ZombieTable[key],female,current)
+        -- verify data was found in the list to chose or current is not choice
+        if choice ~= nil then
+            data.apply(zombie,choice)
         end
     end
 end
+
+
 
 
 --- VISUALS ---
@@ -397,7 +460,11 @@ end
 --- Get the `ZType` of a zombie.
 ---@param zombie IsoZombie
 ZomboidForge.GetZType = function(zombie)
-    local trueID = ZomboidForge.getTrueID(zombie)
+    local nonPersistentZData = ZomboidForge.GetNonPersistentZData(zombie)
+    local ZType = nonPersistentZData.ZType
+    if ZType then return ZType end
+
+    local trueID = ZomboidForge.GetTrueID(zombie)
 
     -- chose a seeded random number based on max total weight
     local rand = ZomboidForge.seededRand(trueID,ZomboidForge.TotalChance)

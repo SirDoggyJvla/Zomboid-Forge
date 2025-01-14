@@ -57,18 +57,16 @@ ZombieNametag.isValidForNametag = function(zombie,isBehind,isOnCursor)
     then
         return false
 
-    -- 3. draw if zombie is attacking and option for it is on
-    elseif Configs.WhenZombieIsTargeting and zombie:getTarget() then
+    -- 3. draw if zombie is in radius of cursor detection
+    elseif isOnCursor then
+        return true
 
-        -- verify the zombie has a target and the player is the target
+    -- 4. zombie is targeting client
+    elseif Configs.WhenZombieIsTargeting then
         local target = zombie:getTarget()
         if target and target == client_player then
             return true
         end
-
-    -- 4. draw if zombie is in radius of cursor detection
-    elseif isOnCursor then
-        return true
     end
 
     -- else return false, zombie is not valid
@@ -165,6 +163,7 @@ function ZombieNametag:new(zombie,ZombieTable)
     --- DEBUG ---
     if isDebugEnabled() and ZomboidForge.DEBUG_ZombiePannel.RegisterNametags then
         print("New Nametag")
+        print(getText(ZombieTable.name))
         for k,v in pairs(o) do
             print(tostring(k) .. ": "..tostring(v))
         end

@@ -24,6 +24,45 @@ ZomboidForge.PrintZTypes = function()
     end
 end
 
+ZomboidForge.HandleDebuggingOnTick = function(zombie,tick)
+    --- ZOMBIE PANNEL ---
+    local DEBUG_ZombiePannel = ZomboidForge.DEBUG_ZombiePannel
+    if ZomboidForge.CountTrueInTable(DEBUG_ZombiePannel) > 0 then
+        local zombiePannel = ""
+
+        if DEBUG_ZombiePannel.Stats then
+            zombiePannel = zombiePannel.."\nSTATS:\n"
+
+            zombiePannel = zombiePannel.."memory = "..tostring(zombie.memory).."\n"
+            zombiePannel = zombiePannel.."sight = "..tostring(zombie.sight).."\n"
+            zombiePannel = zombiePannel.."hearing = "..tostring(zombie.hearing).."\n"
+            zombiePannel = zombiePannel.."cognition = "..tostring(zombie.cognition).."\n"
+            zombiePannel = zombiePannel.."strength = "..tostring(zombie.strength).."\n"
+            zombiePannel = zombiePannel.."speedType = "..tostring(zombie.speedType).."\n"
+            zombiePannel = zombiePannel.."walkVariant = "..tostring(zombie.walkVariant).."\n"
+        end
+
+        if DEBUG_ZombiePannel.ZombieTable then
+            zombiePannel = zombiePannel.."\nZOMBIE TABLE STATS:\n"
+
+            zombiePannel = zombiePannel.."memory = "..tostring(ZombieTable.memory).."\n"
+            zombiePannel = zombiePannel.."sight = "..tostring(ZombieTable.sight).."\n"
+            zombiePannel = zombiePannel.."hearing = "..tostring(ZombieTable.hearing).."\n"
+            zombiePannel = zombiePannel.."cognition = "..tostring(ZombieTable.cognition).."\n"
+            zombiePannel = zombiePannel.."strength = "..tostring(ZombieTable.strength).."\n"
+            zombiePannel = zombiePannel.."toughness = "..tostring(ZombieTable.toughness).."\n"
+        end
+
+        if DEBUG_ZombiePannel.ShowHealth then
+            zombiePannel = zombiePannel.."\nZOMBIE HEALTH:\n"
+
+            zombiePannel = zombiePannel.."health = "..tostring(zombie:getHealth()).."\n"
+        end
+
+        zombie:addLineChatElement(zombiePannel)
+    end
+end
+
 ZomboidForge.Debug.OnFillWorldObjectContextMenu = function(playerIndex, context, worldObjects, test)
     -- access the first square found
     local worldObject,square

@@ -46,6 +46,7 @@ end
 
 
 --- BOOLEAN HANDLER ---
+
 ZomboidForge.SwapBoolean = function(boolean)
     if boolean then
         return false
@@ -147,30 +148,36 @@ end
 ---@param current any
 ---@return any
 ZomboidForge.ChoseInData = function(data,female,current)
+    local data_type = type(data)
+
+    -- try to fetch female/male specific data
+    if data_type == "table" then
+        data = female and data.female or not female and data.male or data
+    end
+
     -- skip nil
     if data == nil then
         return nil
 
     -- handle unique data
     elseif type(data) ~= "table" then
-        return data ~= current and data
+        return data ~= current and data or nil
 
     -- handle single entry array
     elseif #data == 1 then
         data = data[1]
-        return data ~= current and data
+        return data ~= current and data or nil
     end
-
-    data = female and data.female or not female and data.male or data
 
     -- handle array
     if ZomboidForge.isArray(data) then
-        if current and ZomboidForge.IsInArray(data,current) then return nil end
+        -- if current and ZomboidForge.IsInArray(data,current) then return nil end
 
         return data[random:random(1,#data)]
     end
 
-    if data[current] then return nil end
+    -- we actually want to force roll to make sure the percentages are right
+    -- if data[current] then return nil end
 
     -- handle key table, which means weighted
     return ZomboidForge.RandomWeighted(data)

@@ -26,6 +26,11 @@ Events.OnTick.Add(ZomboidForge.OnTick)
 -- Death of zombie
 Events.OnZombieDead.Add(ZomboidForge.OnZombieDead)
 
+-- Hitting zombie
+Events.OnWeaponHitCharacter.Add(ZomboidForge.OnCharacterHitZombie)
+Events.OnZombieHitCharacter.Add(ZomboidForge.OnZombieHitCharacter)
+Events.OnZombieThump.Add(ZomboidForge.OnZombieThump)
+
 -- debug client specific events
 if isDebugEnabled() then
     Events.OnFillWorldObjectContextMenu.Add(ZomboidForge.Debug.OnFillWorldObjectContextMenu)
