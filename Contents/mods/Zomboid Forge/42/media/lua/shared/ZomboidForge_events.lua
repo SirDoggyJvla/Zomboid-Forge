@@ -30,6 +30,7 @@ Events.OnZombieDead.Add(ZomboidForge.OnZombieDead)
 Events.OnWeaponHitCharacter.Add(ZomboidForge.OnCharacterHitZombie)
 Events.OnZombieHitCharacter.Add(ZomboidForge.OnZombieHitCharacter)
 Events.OnZombieThump.Add(ZomboidForge.OnZombieThump)
+Events.OnWeaponHitXp.Add(ZomboidForge.OnWeaponHitXp)
 
 -- debug client specific events
 if isDebugEnabled() then

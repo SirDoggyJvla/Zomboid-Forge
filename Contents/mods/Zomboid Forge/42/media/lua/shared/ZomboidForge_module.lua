@@ -228,6 +228,7 @@ local ZomboidForge = {
                 return zombie:getHealth()
             end,
             apply = function(zombie,choice)
+                if choice == 0 then return end -- skip if health of 0
                 zombie:setHealth(choice)
             end,
         },

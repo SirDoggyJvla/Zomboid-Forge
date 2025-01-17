@@ -88,6 +88,8 @@ end
 ---Detect when a zombie gets loaded in and initialize it.
 ---@param zombie IsoZombie
 ZomboidForge.OnZombieCreate = function(zombie)
+    -- remove zombie from nametag list
+    ZomboidForge.nametagList[zombie] = nil
     if not IsZombieValid(zombie) then return end
 
     -- delay initialization until pID is properly initialized by the game
@@ -147,8 +149,6 @@ ZomboidForge.OnZombieUpdate = function(zombie)
         end
     end
 
-
-
     --- DETECTING ZOMBIE ATTACKS ---
 
     local target = zombie:getTarget()
@@ -176,6 +176,7 @@ end
 ---Handles nametag and updating delayed actions.
 ---@param tick int
 ZomboidForge.OnTick = function(tick)
+    -- print("new tick: "..tostring(tick))
     -- update delayed actions
     UpdateDelayedActions()
 
@@ -284,6 +285,7 @@ ZomboidForge.OnZombieDead = function(zombie)
 
     -- delete zombie data
     ZomboidForge.ResetNonPersistentZData(zombie)
+    ZomboidForge.nametagList[zombie] = nil
 end
 
 
@@ -299,13 +301,32 @@ end
 ---@param handWeapon HandWeapon
 ---@param damage float
 ZomboidForge.OnCharacterHitZombie = function(attacker, zombie, handWeapon, damage)
-    if not instanceof(zombie,"IsoZombie") or not zombie:isAlive() then return end
+    if not instanceof(zombie,"IsoZombie") or not zombie:isAlive() or not IsZombieValid(zombie) then return end
     ---@cast zombie IsoZombie
 
     -- get zombie informations
     local nonPersistentZData = ZomboidForge.GetNonPersistentZData(zombie)
     local ZType = ZomboidForge.GetZType(zombie)
     local ZombieTable = ZomboidForge.ZTypes[ZType]
+
+    if not nonPersistentZData.skipNextPellet then
+        nonPersistentZData.skipNextPellet = true
+
+        -- used to reset the pellet skipping on next tick, once every bullets hit their target
+        AddNewDelayedAction(
+            {fct = function(nonPersistentZData)
+                nonPersistentZData.skipNextPellet = false
+                zombie:setAvoidDamage(false)
+            end,
+            args = {nonPersistentZData},
+            _ticksDelay = 1,
+            }
+        )
+    elseif ZombieTable.onlyOneShotgunPellet then
+        -- skip next damage and remove a hit time value
+        zombie:setAvoidDamage(true)
+        zombie:setHitTime(zombie:getHitTime() - 1)
+    end
 
     -- note HP
     local HP = zombie:getHealth()
@@ -315,14 +336,14 @@ ZomboidForge.OnCharacterHitZombie = function(attacker, zombie, handWeapon, damag
     -- this is done by checking the weapon are hands and if damage is close to 0
     local handPush = false
     local footStomp = false
-    if handWeapon:getFullType() == "Base.BareHands" then
+    if attacker:isDoShove() then
         -- hand push
-        if math.floor(damage) <= 0 then
-            handPush = true
+        if attacker:isAimAtFloor() then
+            footStomp = true
 
         -- foot stomp
         else
-            footStomp = true
+            handPush = true
         end
     end
 
@@ -332,11 +353,10 @@ ZomboidForge.OnCharacterHitZombie = function(attacker, zombie, handWeapon, damag
         zombie:setAvoidDamage(true)
     end
 
-    AddNewDelayedAction({
-        fct = ZomboidForge.AfterZombieGetHit,
-        args = {zombie},
-        _ticksDelay = 1,
-    })
+    local hitTime = ZomboidForge.ChoseInData(ZombieTable.hitTime,zombie:isFemale())
+    if hitTime then
+        zombie:setHitTime(hitTime)
+    end
 
     -- run custom behavior functions for this zombie
     local onCharacterHitZombie = ZombieTable.onCharacterHitZombie
@@ -347,27 +367,52 @@ ZomboidForge.OnCharacterHitZombie = function(attacker, zombie, handWeapon, damag
     end
 end
 
-ZomboidForge.AfterZombieGetHit = function(zombie)
-    if not zombie:isAlive() then return end
-    local damage = ZomboidForge.GetNonPersistentZData(zombie).HP - zombie:getHealth()
+ZomboidForge.OnWeaponHitXp = function(attacker, weapon, zombie, damage)
+    if not instanceof(zombie,"IsoZombie") or not zombie:isAlive() or not IsZombieValid(zombie) then return end
+
+    -- the damage value retrieved is wrong, get the real one
+    damage = ZomboidForge.GetNonPersistentZData(zombie).HP - zombie:getHealth()
+    print("real damage: "..tostring(damage))
 
     local ZType = ZomboidForge.GetZType(zombie)
     local ZombieTable = ZomboidForge.ZTypes[ZType]
+
+    if ZombieTable.fixShotgunsDamage then
+        if weapon:isAimedFirearm() and weapon:getMaxHitCount() > 1 and damage ~= 0 and damage >= 2 then
+            zombie:setHitTime(zombie:getHitTime()-1)
+        end
+    end
 
     -- show nametag
     if SandboxVars.ZomboidForge.Nametags and Configs.ShowNametag then
         ZomboidForge.nametagList[zombie] = ZombieNametag:new(zombie,ZombieTable)
     end
 
+    -- ignore stagger
+    if ZomboidForge.ChoseInData(ZombieTable.ignoreStagger,zombie:isFemale()) then
+        zombie:setHitReaction("")
+    end
+
+    -- ignore knockdown
+    if ZomboidForge.ChoseInData(ZombieTable.ignoreKnockdown,zombie:isFemale()) then
+        zombie:setHitReaction("")
+        zombie:setKnockedDown(false)
+    end
+
+    -- ignore push
+    if attacker:isDoShove() and ZomboidForge.ChoseInData(ZombieTable.ignorePush,zombie:isFemale()) then
+        -- zombie:setKnockedDown(false)
+        -- zombie:setStaggerBack(false)
+    end
+
     -- run custom behavior functions for this zombie
-    local afterZombieGetHit = ZombieTable.afterZombieGetHit
-    if afterZombieGetHit then
-        for i = 1,#afterZombieGetHit do
-            afterZombieGetHit[i](zombie,ZType,ZombieTable,damage)
+    local onWeaponHitXp = ZombieTable.onWeaponHitXp
+    if onWeaponHitXp then
+        for i = 1,#onWeaponHitXp do
+            onWeaponHitXp[i](zombie,ZType,ZombieTable,damage)
         end
     end
 end
-
 
 ZomboidForge.OnZombieHitCharacter = function(zombie,victim,attackOutcome)
     local ZType = ZomboidForge.GetZType(zombie)

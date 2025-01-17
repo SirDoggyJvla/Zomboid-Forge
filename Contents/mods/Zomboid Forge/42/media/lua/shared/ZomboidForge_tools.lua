@@ -224,3 +224,11 @@ ZomboidForge.GetZombiesOnCursor = function(radius)
 
     return zombiesOnCursor
 end
+
+
+
+--- ZOMBIE COMBAT ---
+
+ZomboidForge.SkipShotgunPellet = function(zombie)
+    
+end
